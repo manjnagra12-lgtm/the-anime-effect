@@ -303,18 +303,36 @@ Run the automated test suite with:
 python manage.py test
 ```
 
-The tests cover registration/login/logout and duplicate email validation, catalog search and staff-only CRUD (including cover upload), tracker privacy and episode limits, and blog post creation, length validation, and author-only CRUD. The implementation was verified with 18 passing Django tests.
+The current automated suite contains **29 Django tests**, verified with:
+
+```text
+Ran 29 tests
+OK
+System check identified no issues
+```
+
+Coverage includes:
+
+- Account registration, login/logout, and duplicate email validation.
+- Catalog search and detail pages, staff-only anime create/edit/delete, cover uploads, and fallback to a bundled cover when an uploaded image is unavailable.
+- Tracker privacy, status/progress validation, and episode limits.
+- Community feed and post details, authenticated comment creation, comment length validation, post creation and length validation, and author-only post editing/deletion.
+- Contact form rendering, submission and validation, and staff access to the admin inbox.
+- About page content and shared social media links.
+
+The test suite verifies application behavior; it does not replace manual browser checks for accessibility and responsive behavior.
 
 Manual browser checks (including the small JavaScript interactions):
 
 | Check | Expected result |
 | --- | --- |
-| Resize the catalog, detail, tracker, and feed pages from 320 px mobile width through tablet, desktop, and ultrawide widths | No horizontal overflow; content and controls remain available, with more catalog columns on wide displays |
+| Resize the catalog, detail, tracker, feed, About, and Contact pages from 320 px mobile width through tablet, desktop, and ultrawide widths | No horizontal overflow; content and controls remain available, with more catalog columns on wide displays |
 | Use Tab/Shift+Tab and Enter from the top of each page | Focus indicator is visible and links/forms remain usable |
 | Dismiss a success notification | The selected notification disappears |
 | Submit a tracker removal, then cancel the confirmation | The entry remains; confirming removes only the signed-in user's entry |
-| Try an invalid episode count and an overlong post | The form stays open and displays a field-specific validation message |
+| Try an invalid episode count, an overlong post, and an invalid contact email | The form stays open and displays a field-specific validation message |
 | Open another user's post edit/delete URL | The request is denied (404) and the post remains unchanged |
+| Open the catalog when a saved cover image is unavailable | A matching bundled static cover is used, or a title placeholder is shown |
 
 These are repeatable checks for manual use; automated Django test results are listed above.
 
