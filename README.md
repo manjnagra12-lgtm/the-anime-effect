@@ -270,7 +270,7 @@ The app loads `.env` for local development and reads deployment values from envi
 
 | Variable | Purpose | Default |
 | --- | --- | --- |
-| `DJANGO_SECRET_KEY` | Django signing key; required when debug is off and must be private | No production default |
+| `DJANGO_SECRET_KEY` or `SECRET_KEY` | Django signing key; required when debug is off and must be private | No production default |
 | `DJANGO_DEBUG` | Enables Django debug mode when set to `true`, `1`, or `yes` | `False` |
 | `DJANGO_ALLOWED_HOSTS` | Comma-separated hostnames | `localhost,127.0.0.1` |
 | `DJANGO_SECURE_COOKIES` | Marks session and CSRF cookies as HTTPS-only | `False` |
@@ -328,6 +328,25 @@ python manage.py migrate
 ```
 
 Start the web service with `gunicorn config.wsgi:application` (also defined in `Procfile`). Create a staff user with `python manage.py createsuperuser`, then enter catalog data through `/admin/`. Before launch, confirm debug mode is off, the production host is allowed, HTTPS is enabled by the platform, and the deployed catalog/authentication/tracker/blog flows work end to end.
+
+#### Heroku configuration
+
+Heroku does not read the repository's local `.env` file. Add config vars in **Heroku Dashboard → Settings → Config Vars** (or with `heroku config:set`):
+
+- `DJANGO_SECRET_KEY`: a newly generated, private Django secret. Settings also accept Heroku's conventional `SECRET_KEY` name.
+- `DJANGO_ALLOWED_HOSTS`: your app hostname, for example `your-app-name.herokuapp.com` (add any custom hostname as a comma-separated value).
+- `DJANGO_DEBUG`: `False`.
+- `DATABASE_URL`: configure a persistent production database; do not rely on the dyno's local SQLite file.
+- Once HTTPS is confirmed, set `DJANGO_SECURE_COOKIES=True` and `DJANGO_SECURE_SSL_REDIRECT=True`. Enable HSTS only after verifying the site works over HTTPS.
+
+Generate a secret locally without putting it in the repository, then set it on the app:
+
+```powershell
+$secret = python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+heroku config:set "DJANGO_SECRET_KEY=$secret" "DJANGO_DEBUG=False" "DJANGO_ALLOWED_HOSTS=your-app-name.herokuapp.com" --app your-app-name
+```
+
+Replace both example app names with your actual Heroku app name. Then redeploy. The build runs `collectstatic`; the `Procfile` starts Gunicorn. If collection still fails, inspect the full build log above Heroku's generic collectstatic message—the underlying traceback is needed to diagnose a different failure. Do not disable static collection as a workaround because the app's styles and JavaScript are served as static assets.
 
 ### AI-assisted development reflection
 

@@ -10,15 +10,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
 DEBUG = os.environ.get("DJANGO_DEBUG", "False").lower() in {"true", "1", "yes"}
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "").strip()
+SECRET_KEY = (
+    os.environ.get("DJANGO_SECRET_KEY") or os.environ.get("SECRET_KEY") or ""
+).strip()
 if not SECRET_KEY:
     if DEBUG:
         SECRET_KEY = "local-development-only-secret-key"
     else:
         raise ImproperlyConfigured(
-            "DJANGO_SECRET_KEY must be set in the environment when DJANGO_DEBUG is False."
+            "Set DJANGO_SECRET_KEY or SECRET_KEY in the environment when DJANGO_DEBUG is False."
         )
-if not DEBUG and SECRET_KEY == "local-development-only-change-before-deployment":
+if not DEBUG and SECRET_KEY in {
+    "local-development-only-change-before-deployment",
+    "local-development-only-secret-key",
+}:
     raise ImproperlyConfigured("Replace the example DJANGO_SECRET_KEY before production.")
 SECURE_COOKIES = os.environ.get("DJANGO_SECURE_COOKIES", "False").lower() in {
     "true",
