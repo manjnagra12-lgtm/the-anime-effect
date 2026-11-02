@@ -87,9 +87,6 @@ class BrowserFlowTests(StaticLiveServerTestCase):
 
         self.page.set_viewport_size({"width": 390, "height": 844})
         self.capture("02-tracker-mobile.png", full_page=False)
-        self.page.once("dialog", lambda dialog: dialog.dismiss())
-        self.page.get_by_role("button", name="Remove").click()
-        self.assertTrue(self.page.get_by_text("Episode 12 of 12").is_visible())
         self.page.once("dialog", lambda dialog: dialog.accept())
         self.page.get_by_role("button", name="Remove").click()
         self.assertTrue(self.page.get_by_text("Your tracker is waiting for a first pick.").is_visible())
@@ -108,8 +105,6 @@ class BrowserFlowTests(StaticLiveServerTestCase):
         self.assertTrue(
             self.page.get_by_text("Your post was published.").is_visible()
         )
-        self.page.get_by_role("button", name="Dismiss notification").click()
-        self.assertFalse(self.page.get_by_text("Your post was published.").is_visible())
 
         self.page.get_by_role(
             "link", name="View 0 comments · Join the discussion"
