@@ -3,7 +3,7 @@
 Welcome to my Full-Stack Capstone project! I am an aspiring software engineer currently completing an intensive, AI-Augmented Full-Stack Bootcamp. This platform represents the culmination of my learning, combining a deep passion for the anime community with rigorous software engineering principles.
 
 ### 🚀 Project Vision
-As an avid fan of animation, I wanted to build more than a static database. **My project is a responsive, full-stack anime platform that bridges content tracking with community engagement.** It serves as a centralized hub where users can seamlessly manage their seasonal watchlists, stay up-to-date with current 2026 releases (like *The Apothecary Diaries* and *Nippon Sangoku*), and share live reactions with other fans via an integrated micro-blogging feed.
+As an avid fan of animation, I wanted to build more than a static database. **My project is a responsive, full-stack anime platform that bridges content tracking with community engagement.** Users can browse an anime catalog, manage a personal watchlist, and share their thoughts with the community through a micro-blogging feed.
 
 ### 🛠️ Technical Focus & Learning Objectives
 This application was engineered from scratch to demonstrate production-ready proficiency across several core pillars of full-stack development:
@@ -11,114 +11,106 @@ This application was engineered from scratch to demonstrate production-ready pro
 * **Robust Backend Architecture (LO1.2/2.1):** Powered by Django's ORM with a custom database schema, strict validation constraints, and relational data integrity.
 * **Role-Based Access Control (LO3):** Implements secure, granular permissions differentiating standard users from site administrators to safeguard data modifications.
 * **Accessibility-focused UX/UI Design (LO1.1):** Uses semantic templates, visible keyboard focus, labeled forms, and responsive CSS; accessibility checks and remaining limitations are documented below.
-* Static templates for reuse and to keep a consistant theme
+* **Reusable templates:** Shared page templates help keep the site’s layout and visual style consistent.
 
-## User case stories
+## User stories
 
-User Story 1: User Registration
+### Epic 1: Accounts and Access Control
 
-• As a visitor,
-I want to create an account with a unique username, email, and password,
-So that I can access the tracking and blogging features of the site.
-• Acceptance Criteria:
-	• Registration form includes field validation (e.g., matching passwords, valid email format).
-	• Front-end form clearly labels required fields and displays helpful error messages for invalid input.
-	• Successfully registered users are automatically logged in and redirected to the home/dashboard page.
+#### User Story 1: User Registration
 
-User Story 2: Role-Based Login & State Reflection
+> As a visitor, I want to create an account with a unique username, email, and password so that I can use the tracking and community features.
 
-• As a registered user,
-I want to securely log into my account,
-So that I can view my personalized dashboard and navigation options.
-• Acceptance Criteria:
-	• Nav bar dynamically switches based on login state ({% if user.is_authenticated %}).
-	• Logged-in users see their username, a link to "My Tracker", and a "Logout" button. Anonymous visitors see "Login" and "Register".
-	• Invalid login attempts display a clear, accessible error message without revealing sensitive security details.
+**Acceptance criteria:**
+  - The registration form validates input, including matching passwords and valid email addresses.
+  - The form labels its fields and displays helpful validation errors.
+  - After registration, users are signed in and redirected to the home page.
 
-User Story 3: Restricted Access Control
+#### User Story 2: Role-Based Login and State Reflection
 
-• As a site owner,
-I want to restrict tracking and social actions to authorized roles only,
-So that anonymous users cannot manipulate data or post spam.
-• Acceptance Criteria:
-	• Unauthenticated users trying to access /tracker/ or /blog/create/ are redirected to the login page (using Django's @login_required or Mixins).
-	• Regular users attempting to access admin routes (like adding an anime to the global directory) receive a HTTP 403 Forbidden error or a redirection with an error message.
+> As a registered user, I want to log in securely so that I can access my personalized tracker and account navigation.
 
-📖 Epic 2: Anime Information & Directory (LO1 / LO2)
+**Acceptance criteria:**
+  - The navigation changes according to the user's sign-in state (`{% if user.is_authenticated %}`).
+  - Signed-in users see a personalized greeting and links to My Tracker and Log out; signed-out visitors see Log in and Join.
+  - Invalid login attempts display an accessible error without revealing sensitive security details.
 
+#### User Story 3: Restricted Access Control
 
-User Story 4: Browse & Search Anime Database
+> As the site owner, I want to restrict protected actions to authorized users so that anonymous visitors cannot manage private data or publish content.
 
-• As a user (logged in or out),
-As a visitor,
-I want to view a clean, responsive grid list of anime and click into them for details,
-So that I can read synopses, genres, and studio information.
-• Acceptance Criteria:
-	• The anime catalog layout uses semantic HTML and adapts fluidly across mobile, tablet, and desktop screens (Flexbox/Grid/Bootstrap).
-	• Text and background choices meet WCAG contrast requirements.
-	• Clicking an anime card takes the user to a detailed view showing all information stored in the Anime database model.
+**Acceptance criteria:**
+  - Unauthenticated users who try to access `/tracker/` or `/blog/create/` are redirected to sign in.
+  - Non-staff users who try to manage the catalog receive an HTTP 403 Forbidden response.
 
-User Story 5: Admin Content Management
-
-• As an Admin,
-I want to create, update, and delete anime entries from the global database via the front-end or admin panel,
-So that the site's catalog remains accurate and up to date.
-• Acceptance Criteria:
-	• Only users with is_staff or is_superuser privileges can access the creation/editing forms.
-	• Database changes scale cleanly via standard Django migrations.
-
-📊 Epic 3: Personal Watchlist Tracking (LO2)
+### Epic 2: Anime Information and Directory (LO1 / LO2)
 
 
-User Story 6: Add & Update Tracked Anime (Create & Update)
+#### User Story 4: Browse and Search the Anime Database
 
-• As a logged-in user,
-I want to add an anime to my tracking list, select my watch status, and update my episode progress,
-So that I can keep an organized log of my viewing history.
-• Acceptance Criteria:
-	• Users can add an anime from its detail page using a form with a dropdown for status (Plan to Watch, Watching, Completed).
-	• Form validation restricts the user from setting an episode number lower than 0 or higher than the total episode count of the anime.
-	• Saving changes updates the record securely using Django's ORM.
+> As a visitor, whether signed in or not, I want to browse a responsive anime catalog and open individual titles so that I can read their synopses, genres, and studio information.
 
-User Story 7: View & Manage Watchlist (Read & Delete)
+**Acceptance criteria:**
+  - The catalog uses semantic HTML and adapts to mobile, tablet, and desktop screens.
+  - Text and background colors are checked for contrast; see the accessibility audit for results and limitations.
+  - Selecting an anime opens a detail page with its available catalog information.
 
-• As a logged-in user,
-I want to view a dedicated "My Tracker" dashboard and remove items if I choose,
-So that I can review my historical data or clean up accidental entries.
-• Acceptance Criteria:
-	• "My Tracker" displays a comprehensive list of only the current user's tracked items.
-	• A "Remove" button triggers a secure deletion of that specific tracker instance from the database.
-	• Triggering a deletion displays a dismissible Django success message ("Anime successfully removed from your list").
+#### User Story 5: Admin Content Management
 
-💬 Epic 4: Social Blog & Feed (LO2)
+> As a staff user, I want to create, update, and delete catalog entries through the site or admin panel so that the catalog remains accurate.
+
+**Acceptance criteria:**
+  - Only staff users can create, edit, or delete catalog entries.
+  - Database schema changes are managed with Django migrations.
+
+### Epic 3: Personal Watchlist Tracking (LO2)
 
 
-User Story 8: Publish a Blog Post (Create)
+#### User Story 6: Add and Update Tracked Anime
 
-• As a logged-in user,
-I want to write and publish a blog post (with an optional tag for a specific anime),
-So that I can share my thoughts with the wider community.
-• Acceptance Criteria:
-	• The creation form includes validation preventing empty submissions or text that exceeds character limits.
-	• Successfully publishing a post triggers a visual success message notification for the user.
+> As a signed-in user, I want to add anime to my tracker, choose a watch status, and update episode progress so that I can keep an organized viewing history.
 
-User Story 9: View the Live Community Blog Feed (Read)
+**Acceptance criteria:**
+  - Users can add an anime from its detail page and choose a status: Plan to Watch, Watching, or Completed.
+  - Validation prevents episode progress below 0 or above the anime's total episode count.
+  - Changes are saved using Django's ORM.
 
-• As a user,
-I want to view a reverse-chronological feed of all community blog posts,
-So that I can see the latest discussions and reactions seamlessly.
-• Acceptance Criteria:
-	• The feed loads posts dynamically from the database, displaying the author's name, timestamp, content, and linked anime (if applicable).
-	• The layout behaves responsively and renders content conditionally depending on whether the post author is the active logged-in user.
+#### User Story 7: View and Manage the Watchlist
 
-User Story 10: Edit & Delete Personal Posts (Update & Delete)
+> As a signed-in user, I want to view my tracker and remove entries when needed so that I can review my watchlist and correct mistakes.
 
-• As a post author,
-I want to modify or permanently remove a blog post I wrote,
-So that I can fix typos or retract my commentary.
-• Acceptance Criteria:
-	• "Edit" and "Delete" actions are structurally hidden from anyone who is not the creator of that specific post.
-	• Back-end logic verifies user ownership before completing any POST/DELETE operations to secure data records.
+**Acceptance criteria:**
+  - My Tracker displays only the signed-in user's tracked titles.
+  - A Remove action deletes the selected tracker entry after confirmation.
+  - Successful removal displays a dismissible confirmation message.
+
+### Epic 4: Community Posts and Comments (LO2)
+
+
+#### User Story 8: Publish a Community Post
+
+> As a signed-in user, I want to publish a post with an optional anime tag so that I can share my thoughts with the community.
+
+**Acceptance criteria:**
+  - The form rejects empty posts and text that exceeds the character limit.
+  - Successful publication displays a notification.
+
+#### User Story 9: View the Community Feed and Comment
+
+> As a visitor, I want to read the community feed and open individual posts so that I can follow discussions; as a signed-in user, I also want to comment.
+
+**Acceptance criteria:**
+  - The feed displays posts from the database in reverse chronological order, including author, timestamp, content, and an optional anime link.
+  - The responsive feed shows post-management actions only to the author.
+  - Signed-in users can open a post's detail page and add a comment; visitors can read posts but must sign in to comment.
+
+#### User Story 10: Edit and Delete Personal Posts
+
+> As a post author, I want to edit or delete my posts so that I can correct or remove my contributions.
+
+**Acceptance criteria:**
+  - Edit and Delete actions are shown only to the post's author.
+  - The server verifies ownership before allowing a post to be changed or deleted.
 
 
 
@@ -146,82 +138,86 @@ erDiagram
 ```
 
 
-🗂️ Detailed Schema Architecture
+### Detailed schema
 
+The application uses Django's built-in `User` model and the following app models.
 
-1. User Model (django.contrib.auth.models.User)
+#### User (`django.contrib.auth`)
 
-This is Django’s built-in authentication model, handling account registration and system access rules.
+Django's built-in authentication model stores account and permission information. The registration form validates that email addresses are unique, although the `email` field itself is not a database-unique field.
 
-Field Name	Data Type	Key Type	Properties / Constraints
-id	Integer	PK	Auto-incrementing, Unique
-username	Varchar(150)	Unique	Required, unique login credential
-email	Varchar(254)	None	Validated email string
-is_staff	Boolean	None	Default: False (Controls Admin panel access)
+| Field | Type | Constraints and notes |
+| --- | --- | --- |
+| `id` | Integer | Primary key |
+| `username` | `CharField(150)` | Required and unique |
+| `email` | `EmailField(254)` | Validated by the registration form; not database-unique |
+| `is_staff` | Boolean | Defaults to `False`; controls staff access |
 
+#### Anime (`catalog`)
 
-2. Anime Model (App: catalog)
+Stores catalog entries. Catalog management is restricted to staff.
 
-Stores general descriptive data for the site directory. Controlled exclusively by Admin roles.
+| Field | Type | Constraints and notes |
+| --- | --- | --- |
+| `id` | Integer | Primary key |
+| `title` | `CharField(255)` | Required and indexed |
+| `synopsis` | Text | Optional |
+| `total_episodes` | Positive integer | Required; minimum 1, including a database check constraint |
+| `genres` | `CharField(255)` | Optional |
+| `studio` | `CharField(150)` | Optional |
+| `image` | Image field | Optional; uploads are limited to 5 MB |
 
-Field Name	Data Type	Key Type	Properties / Constraints
-id	Integer	PK	Auto-incrementing, Unique
-title	Varchar(255)	None	Required, indexed
-synopsis	Text	None	Optional long-form story overview
-total_episodes	PositiveInteger	None	Required, minimum 1; database check constraint
-genres	Varchar(255)	None	Optional
-studio	Varchar(150)	None	Optional
-image	ImageField	None	Optional uploaded image; maximum size 5 MB
+#### UserTracker (`tracker`)
 
+Links a user to an anime entry and stores that user's watch status and progress.
 
-3. UserTracker Model (App: tracker)
+| Field | Type | Constraints and notes |
+| --- | --- | --- |
+| `id` | Integer | Primary key |
+| `user_id` | Foreign key | References `User`; cascades on user deletion |
+| `anime_id` | Foreign key | References `Anime`; cascades on anime deletion |
+| `status` | `CharField(20)` | Choices: Plan to Watch, Watching, or Completed |
+| `current_episode` | Positive integer | Defaults to 0; form validation limits progress to the anime's episode total |
 
-Acts as a junction table bridging users and shows to handle individual watchlists.
+A unique constraint on (`user`, `anime`) prevents a user from adding the same anime more than once.
 
-Field Name	Data Type	Key Type	Properties / Constraints
-id	Integer	PK	Auto-incrementing, Unique
-user_id	Integer	FK	Links to User.id (ON DELETE CASCADE)
-anime_id	Integer	FK	Links to Anime.id (ON DELETE CASCADE)
-status	Varchar(20)	None	Choices: ['Plan to Watch', 'Watching', 'Completed']
-current_episode	PositiveInteger	None	Default: 0 (Validated against Anime.total_episodes)
+#### BlogPost (`social`)
 
-Composite Constraint: unique constraint on ('user', 'anime')
-Prevents a user from adding the same anime to their watchlist more than once.
+Stores community posts, ordered newest first.
 
-4. BlogPost Model (App: social)
+| Field | Type | Constraints and notes |
+| --- | --- | --- |
+| `id` | Integer | Primary key |
+| `author_id` | Foreign key | References `User`; cascades on user deletion |
+| `anime_id` | Foreign key | Optional reference to `Anime`; set to null if the anime is deleted |
+| `content` | Text | Required; maximum 1,000 characters |
+| `created_at` | Date/time | Set automatically when the post is created |
 
-Feeds the live micro-blogging community space.
+#### Comment (`social`)
 
-Field Name	Data Type	Key Type	Properties / Constraints
-id	Integer	PK	Auto-incrementing, Unique
-author_id	Integer	FK	Links to User.id (ON DELETE CASCADE)
-anime_id	Integer	FK	Links to Anime.id (ON DELETE SET_NULL, Null=True, Blank=True)
-content	Text	None	Required; maximum 1,000 characters
-created_at	DateTime	None	Auto-populates on creation (orders chronological feed)
+Stores replies on posts, ordered oldest first. Deleting a post or its author also deletes their comments.
 
-5. Comment Model (App: social)
+| Field | Type | Constraints and notes |
+| --- | --- | --- |
+| `id` | Integer | Primary key |
+| `post_id` | Foreign key | References `BlogPost`; cascades on post deletion |
+| `author_id` | Foreign key | References `User`; cascades on user deletion |
+| `content` | Text | Required; maximum 1,000 characters |
+| `created_at` | Date/time | Set automatically when the comment is created |
 
-Stores replies on a community post. A comment belongs to one post and one author; deleting either cascades to its comments.
+#### ContactMessage (`contact`)
 
-Field Name	Data Type	Key Type	Properties / Constraints
-id	Integer	PK	Auto-incrementing, Unique
-post_id	Integer	FK	Links to BlogPost.id (ON DELETE CASCADE)
-author_id	Integer	FK	Links to User.id (ON DELETE CASCADE)
-content	Text	None	Required; maximum 1,000 characters
-created_at	DateTime	None	Auto-populates on creation; comments ordered oldest first
+Stores public requests and anime suggestions for staff to review in the Django admin. A user account is not required to submit a message.
 
-6. ContactMessage Model (App: contact)
-
-Stores public requests, including anime suggestions, for staff to review in the Django admin inbox. It has no user foreign key because sign-in is not required.
-
-Field Name	Data Type	Key Type	Properties / Constraints
-id	Integer	PK	Auto-incrementing, Unique
-name	Varchar(100)	None	Required
-email	Varchar(254)	None	Required; validated email address
-subject	Varchar(150)	None	Required
-message	Text	None	Required; maximum 3,000 characters
-created_at	DateTime	None	Auto-populates on creation
-is_read	Boolean	None	Default: False; staff can mark the message as read
+| Field | Type | Constraints and notes |
+| --- | --- | --- |
+| `id` | Integer | Primary key |
+| `name` | `CharField(100)` | Required |
+| `email` | `EmailField(254)` | Required and validated |
+| `subject` | `CharField(150)` | Required |
+| `message` | Text | Required; maximum 3,000 characters |
+| `created_at` | Date/time | Set automatically when the message is created |
+| `is_read` | Boolean | Defaults to `False`; staff can mark the message as read |
 
 ## Running the project locally
 
@@ -585,3 +581,9 @@ One specific example of this assistance was building browser-test journeys for r
 - **Strengthen accessibility verification:** Continue page-by-page keyboard and screen-reader testing, check text and control contrast, and add automated accessibility checks to the development workflow.
 - **Expand end-to-end coverage:** Add browser checks for invalid form submissions, logged-out restrictions, and other accessibility interactions as the application evolves.
 - **Use durable production media storage:** Store uploaded anime covers in persistent object storage so they remain available across deployments and dyno restarts.
+
+
+## Special notes
+
+- Some anime cover images originate from online sources.
+- Copilot's assistance with development and testing is acknowledged in the reflection above.
