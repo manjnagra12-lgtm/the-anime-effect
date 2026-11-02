@@ -10,7 +10,7 @@ This application was engineered from scratch to demonstrate production-ready pro
 * **Agile Planning (LO1.3):** Built using an incremental, user-story-driven workflow to track milestones and deliverables.
 * **Robust Backend Architecture (LO1.2/2.1):** Powered by Django's ORM with a custom database schema, strict validation constraints, and relational data integrity.
 * **Role-Based Access Control (LO3):** Implements secure, granular permissions differentiating standard users from site administrators to safeguard data modifications.
-* **Accessible UX/UI Design (LO1.1):** Styled with modern CSS/Bootstrap frameworks to ensure a fully mobile-responsive interface that meets WCAG accessibility guidelines.
+* **Accessible UX/UI Design (LO1.1):** Styled with responsive CSS and Bootstrap components, with WCAG 2.2 Level A as the accessibility target.
 * Static templates for reuse and to keep a consistant theme
 
 ## User case stories
@@ -124,17 +124,26 @@ So that I can fix typos or retract my commentary.
 
 ## ERD
 
-*Database Relations Map
+The diagram reflects the current Django models and their foreign-key deletion rules. `ContactMessage` is intentionally independent: visitors can submit a request without creating an account.
 
-  ┌──────────────┐              ┌─────────────────┐
-  │     USER     │ 1 ──────── * │    BLOGPOST     │
-  └──────────────┘              └─────────────────┘
-         │ 1                             * │ (Optional)
-         │                                 │
-         │ *                               │ 1
-  ┌──────────────┐              ┌─────────────────┐
-  │ USERTRACKER  │ * ──────── 1 │      ANIME      │
-  └──────────────┘              └─────────────────┘
+```mermaid
+erDiagram
+    USER ||--o{ BLOGPOST : writes
+    USER ||--o{ COMMENT : writes
+    BLOGPOST ||--o{ COMMENT : has
+    ANIME o|--o{ BLOGPOST : tags
+    USER ||--o{ USERTRACKER : tracks
+    ANIME ||--o{ USERTRACKER : appears_in
+    CONTACTMESSAGE {
+        bigint id PK
+        varchar name
+        varchar email
+        varchar subject
+        text message
+        datetime created_at
+        boolean is_read
+    }
+```
 
 
 🗂️ Detailed Schema Architecture
@@ -157,9 +166,12 @@ Stores general descriptive data for the site directory. Controlled exclusively b
 
 Field Name	Data Type	Key Type	Properties / Constraints
 id	Integer	PK	Auto-incrementing, Unique
-title	Varchar(255)	None	Required, indexable name
-synopsis	Text	None	Long-form story overview
-total_episodes	PositiveInteger	None	Must be > 0 (Used to validate tracker caps)
+title	Varchar(255)	None	Required, indexed
+synopsis	Text	None	Optional long-form story overview
+total_episodes	PositiveInteger	None	Required, minimum 1; database check constraint
+genres	Varchar(255)	None	Optional
+studio	Varchar(150)	None	Optional
+image	ImageField	None	Optional uploaded image; maximum size 5 MB
 
 
 3. UserTracker Model (App: tracker)
@@ -173,7 +185,7 @@ anime_id	Integer	FK	Links to Anime.id (ON DELETE CASCADE)
 status	Varchar(20)	None	Choices: ['Plan to Watch', 'Watching', 'Completed']
 current_episode	PositiveInteger	None	Default: 0 (Validated against Anime.total_episodes)
 
-Composite Constraint: unique_together = ('user', 'anime')
+Composite Constraint: unique constraint on ('user', 'anime')
 Prevents a user from adding the same anime to their watchlist more than once.
 
 4. BlogPost Model (App: social)
@@ -184,8 +196,32 @@ Field Name	Data Type	Key Type	Properties / Constraints
 id	Integer	PK	Auto-incrementing, Unique
 author_id	Integer	FK	Links to User.id (ON DELETE CASCADE)
 anime_id	Integer	FK	Links to Anime.id (ON DELETE SET_NULL, Null=True, Blank=True)
-content	Text	None	Character limit validation applies
+content	Text	None	Required; maximum 1,000 characters
 created_at	DateTime	None	Auto-populates on creation (orders chronological feed)
+
+5. Comment Model (App: social)
+
+Stores replies on a community post. A comment belongs to one post and one author; deleting either cascades to its comments.
+
+Field Name	Data Type	Key Type	Properties / Constraints
+id	Integer	PK	Auto-incrementing, Unique
+post_id	Integer	FK	Links to BlogPost.id (ON DELETE CASCADE)
+author_id	Integer	FK	Links to User.id (ON DELETE CASCADE)
+content	Text	None	Required; maximum 1,000 characters
+created_at	DateTime	None	Auto-populates on creation; comments ordered oldest first
+
+6. ContactMessage Model (App: contact)
+
+Stores public requests, including anime suggestions, for staff to review in the Django admin inbox. It has no user foreign key because sign-in is not required.
+
+Field Name	Data Type	Key Type	Properties / Constraints
+id	Integer	PK	Auto-incrementing, Unique
+name	Varchar(100)	None	Required
+email	Varchar(254)	None	Required; validated email address
+subject	Varchar(150)	None	Required
+message	Text	None	Required; maximum 3,000 characters
+created_at	DateTime	None	Auto-populates on creation
+is_read	Boolean	None	Default: False; staff can mark the message as read
 
 ## Running the project locally
 
@@ -285,6 +321,87 @@ Never commit `.env`, production credentials, or a production secret key. `.gitig
 
 The interface uses a consistent dark palette with high-contrast text, visible keyboard focus, a skip link, semantic page landmarks, labeled forms, and responsive CSS Grid/Flexbox layouts. On narrow screens the catalog becomes a single-column list, navigation wraps, and tracker rows stack their progress and actions. On larger desktop displays, the content container expands and the catalog uses a four-column grid while keeping a readable maximum width. Reduced-motion preferences are respected. The catalog and community feed are paginated. The primary user flows are:
 
+#### Accessibility target and verification
+
+The project targets **WCAG 2.2 Level A**. Current checks include keyboard access to the skip link, responsive layouts at 320, 390, 768, and 1,280 CSS-pixel widths, and a review of text and control contrast. The automated browser suite checks skip-link keyboard access and horizontal overflow at these viewport widths. These checks cover selected interactions and layouts; they are not a complete WCAG audit and do not establish that the site has no accessibility errors. A full criterion-by-criterion assessment, including assistive-technology testing and a documented automated scan across all pages and states, remains necessary before claiming conformance.
+
+The following low-fidelity wireframes document the page structure and responsive intent. They describe layout rather than final visual styling.
+
+**Shared site layout**
+
+```text
+DESKTOP
++------------------------------------------------------------------+
+| A  The Anime Effect   Discover  Community  About  Contact   Join |
++------------------------------------------------------------------+
+|                                                                  |
+|                         PAGE CONTENT                             |
+|                                                                  |
++------------------------------------------------------------------+
+| The Anime Effect     Discover stories...     Instagram YouTube...|
++------------------------------------------------------------------+
+
+MOBILE
++------------------------------+
+| A  The Anime Effect    Join  |
+| Discover  Community  About   |
+| Contact                      |
++------------------------------+
+|                              |
+|         PAGE CONTENT         |
+|                              |
++------------------------------+
+| The Anime Effect             |
+| Discover stories...          |
+|             Instagram YouTube|
+|                  X TikTok    |
++------------------------------+
+```
+
+**Discover catalog and anime detail**
+
+```text
+DISCOVER                              ANIME DETAIL
++--------------------------------+    +--------------------------------+
+| Find your next favorite        |    | Discover / Anime title         |
+| Explore the catalog...         |    | Anime title                    |
++--------------------------------+    | [Cover]                        |
+| Search title, genre... [Search]|    | Episodes · Studio · Genres     |
++--------------------------------+    | Synopsis                       |
+| [Anime card] [Anime card]      |    | [Add to my tracker]            |
+| [Anime card] [Anime card]      |    +--------------------------------+
+|        Previous  Page  Next    |
++--------------------------------+
+
+On narrow screens, catalog cards stack into one column and detail
+content stays in a single readable column.
+```
+
+**Tracker, community, and contact**
+
+```text
+MY TRACKER                           COMMUNITY
++--------------------------------+   +--------------------------------+
+| My tracker                    |   | Currently discussing           |
+| Anime title · Watching        |   | [Write a post]                 |
+| Episode progress   [Update]   |   +--------------------------------+
+|                   [Remove]    |   | Author · date · anime tag      |
+| Anime title · Plan to Watch   |   | Post text                      |
+| Episode progress   [Update]   |   | View comments                  |
++--------------------------------+   +--------------------------------+
+
+CONTACT
++--------------------------------+
+| Contact us                     |
+| Request or anime suggestion    |
+| Name                           |
+| Email                          |
+| Subject                        |
+| Message                        |
+| [Send message]                 |
++--------------------------------+
+```
+
 ```text
 Discover → Search/filter catalog → Anime details → Add/update tracker
 Community → Read newest posts → Write/edit/delete your own post
@@ -293,7 +410,7 @@ Navigation → Register/log in → My tracker → Update or remove an entry
 
 The implementation keeps the catalog and social feed public while gating tracker actions and content creation behind authentication. Only staff can manage the catalog, and post edits/deletes are scoped to their author.
 
-The initial wireframe was a shared header/navigation above a page-specific content area and footer. Catalog pages use a search bar followed by a responsive card grid; detail pages place show metadata and synopsis above a single tracker action; tracker pages put each title, status, progress bar, and controls together; community pages use stacked post cards with author/time metadata. The mobile adaptation keeps the same content order, wraps navigation, and stacks cards and tracker actions rather than hiding functionality. During implementation, the catalog and feed were paginated to keep longer manually entered datasets manageable.
+The shared header/navigation, page-specific content area, and footer provide a consistent structure. Catalog pages use a search bar followed by a responsive card grid; detail pages place show metadata and synopsis above a single tracker action; tracker pages put each title, status, progress bar, and controls together; community pages use stacked post cards with author/time metadata. The mobile adaptation keeps the same content order, wraps navigation, and stacks cards and tracker actions rather than hiding functionality. During implementation, the catalog and feed were paginated to keep longer manually entered datasets manageable.
 
 ### Tests
 
@@ -303,7 +420,7 @@ Run the automated test suite with:
 python manage.py test
 ```
 
-The current automated suite contains **29 Django tests**, verified with:
+The standard automated suite contains **29 Django tests**. The latest recorded run on **2 November 2026** completed successfully:
 
 ```text
 Ran 29 tests
@@ -320,53 +437,146 @@ Coverage includes:
 - Contact form rendering, submission and validation, and staff access to the admin inbox.
 - About page content and shared social media links.
 
-The test suite verifies application behavior; it does not replace manual browser checks for accessibility and responsive behavior.
+These tests verify application behavior; they do not replace manual accessibility or cross-browser testing.
 
-Manual browser checks (including the small JavaScript interactions):
+#### End-to-end browser tests
 
-| Check | Expected result |
-| --- | --- |
-| Resize the catalog, detail, tracker, feed, About, and Contact pages from 320 px mobile width through tablet, desktop, and ultrawide widths | No horizontal overflow; content and controls remain available, with more catalog columns on wide displays |
-| Use Tab/Shift+Tab and Enter from the top of each page | Focus indicator is visible and links/forms remain usable |
-| Dismiss a success notification | The selected notification disappears |
-| Submit a tracker removal, then cancel the confirmation | The entry remains; confirming removes only the signed-in user's entry |
-| Try an invalid episode count, an overlong post, and an invalid contact email | The form stays open and displays a field-specific validation message |
-| Open another user's post edit/delete URL | The request is denied (404) and the post remains unchanged |
-| Open the catalog when a saved cover image is unavailable | A matching bundled static cover is used, or a title placeholder is shown |
+The optional Playwright suite runs the application on Django's live test server with an isolated test database. It exercises the interface in Chromium and verifies persisted results; the browser is not included in production dependencies.
 
-These are repeatable checks for manual use; automated Django test results are listed above.
+Install the development dependencies and Chromium once:
+
+```powershell
+python -m pip install -r requirements-dev.txt
+python -m playwright install chromium
+```
+
+Run the browser tests:
+
+```powershell
+python manage.py test e2e_tests.browser_flows
+```
+
+To also capture the test screenshots used below, set the screenshot directory before running the suite:
+
+```powershell
+$env:E2E_SCREENSHOT_DIR = "docs/screenshots/e2e"
+python manage.py test e2e_tests.browser_flows
+Remove-Item Env:E2E_SCREENSHOT_DIR
+```
+
+The optional browser suite has **four tests** and is run explicitly with the command above. The latest recorded run on **2 November 2026** passed all four tests.
+
+#### Recorded test outcomes — 2 November 2026
+
+| Test | Expected result | Actual result | Status |
+| --- | --- | --- | --- |
+| Django suite: `python manage.py test` | Application tests complete without failures | 29 tests passed; Django system check reported no issues | Pass |
+| Registration and tracker browser flow | Register, add and update a tracker entry, dismiss its success message, cancel removal without losing the entry, then confirm removal | Browser assertions passed; the entry remained after cancel and was removed after confirmation | Pass |
+| Community browser flow | Publish a post and add a comment | Post and comment appeared in the browser and were verified in the test database | Pass |
+| Contact browser flow | Invalid email is rejected; valid request is submitted | Browser rejected the invalid email; valid submission showed confirmation and was verified in the test database | Pass |
+| Discover keyboard and responsive browser check | First Tab reaches the skip link; no horizontal overflow at 320, 390, 768, and 1,280 CSS-pixel widths | Skip link received focus and `scrollWidth` did not exceed the viewport at any tested width | Pass |
+| JavaScript notification and confirmation behavior | Dismiss removes the notification; cancel preserves data; confirming removes the tracker entry | Both notification dismissal and cancel/confirm assertions passed in Chromium | Pass |
+| Django validation and permission tests | Invalid tracker progress, overlong post/comment, invalid contact request, and unauthorized access are rejected | The corresponding Django tests passed; invalid inputs were not saved and unauthorized requests did not modify records | Pass |
+
+The browser results are from Chromium against Django's local live test server and isolated test database. The responsive browser assertion checks the Discover page at the four widths; it does not constitute a page-by-page cross-browser audit. Manual assistive-technology testing and a full accessibility audit are not included in these results.
+
+Screenshots are opt-in and are written to the directory named by `E2E_SCREENSHOT_DIR`. The screenshots shown here were captured from the local test server using the isolated test database; they are illustrative browser-test evidence, not screenshots of the deployed site or evidence of production data.
+
+**Discover page — desktop browser test**
+
+![Discover page during the browser test](docs/screenshots/e2e/01-discover-desktop.png)
+
+**Tracker — mobile browser test**
+
+![Tracker page at mobile width during the browser test](docs/screenshots/e2e/02-tracker-mobile.png)
+
+**Community post and comment**
+
+![Community post and submitted comment during the browser test](docs/screenshots/e2e/03-community-post-and-comment.png)
+
+**Contact request submitted**
+
+![Successful contact request during the browser test](docs/screenshots/e2e/04-contact-request-sent.png)
+
+**Discover page — mobile browser test**
+
+![Discover page at mobile width during the browser test](docs/screenshots/e2e/05-discover-mobile.png)
+
+**Signed-in navigation after registration**
+
+![Authenticated navigation after account registration](docs/screenshots/e2e/06-authenticated-navigation.png)
+
+**Anime detail and tracker action**
+
+![Anime detail page with the tracker action](docs/screenshots/e2e/07-anime-detail.png)
+
+#### Manual browser screenshots
+
+The following desktop screenshots were captured from the deployed site on 2 November 2026 during visual browser checks. The mobile layout was separately checked at 320, 390, 768, and 1,280 CSS-pixel viewport widths; no horizontal page overflow was detected. These desktop images document page appearance only and do not represent successful form submissions or authenticated tracker actions.
+
+**Discover page — desktop viewport (900 × 700)**
+
+![Discover page at desktop viewport](docs/screenshots/discover-desktop.png)
+
+**Contact page — desktop viewport (900 × 700)**
+
+![Contact page with labeled message fields](docs/screenshots/contact-desktop.png)
 
 ### Deployment
 
-The repository includes a `Procfile` for a WSGI host. Its Heroku `release` process runs `python manage.py migrate` on each deploy, and its `web` process starts Gunicorn. Configure `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_SECURE_COOKIES=True`, `DJANGO_SECURE_SSL_REDIRECT=True`, `DJANGO_SECURE_HSTS_SECONDS` (after HTTPS is verified), and a persistent PostgreSQL `DATABASE_URL` in the host's environment; do not use the local SQLite file as production storage. PostgreSQL connections are configured to require SSL, including Neon. During Heroku's build, `collectstatic` can run before runtime config vars are available, so settings allow that command alone to use a temporary build-only key and SQLite database. This build-only configuration is not used by the web or release processes; the app still requires a production secret and database at runtime. The release process applies migrations:
+#### Deploying to Heroku
 
-```sh
-python -m pip install -r requirements.txt
-python manage.py collectstatic --noinput
-```
+The application is configured for Heroku with the `Procfile`: its release phase applies Django migrations, and its web process runs Gunicorn. Production settings require a PostgreSQL `DATABASE_URL`, a non-empty secret key, and `DJANGO_DEBUG=False`; static files are served by WhiteNoise.
 
-Start the web service with `gunicorn config.wsgi:application` (also defined in `Procfile`). Create a staff user with `python manage.py createsuperuser`, then enter catalog data through `/admin/`. Before launch, confirm debug mode is off, the production host is allowed, HTTPS is enabled by the platform, and the deployed catalog/authentication/tracker/blog flows work end to end.
+1. **Prepare and test the code.** Run the Django tests locally, and run the optional browser tests if Chromium is installed:
 
-#### Heroku configuration
+   ```powershell
+   python manage.py test
+   python manage.py test e2e_tests.browser_flows
+   ```
 
-Heroku does not read the repository's local `.env` file. Add config vars in **Heroku Dashboard → Settings → Config Vars** (or with `heroku config:set`):
+   Push the version you intend to deploy to GitHub.
 
-- `DJANGO_SECRET_KEY`: a newly generated, private Django secret. Settings also accept Heroku's conventional `SECRET_KEY` name.
-- `DJANGO_ALLOWED_HOSTS`: your app hostname, for example `your-app-name.herokuapp.com` (add any custom hostname as a comma-separated value).
-- `CSRF_TRUSTED_ORIGINS`: trusted HTTPS origins, for example `https://your-app-name.herokuapp.com` (add any custom domain's HTTPS origin as another comma-separated value; do not add trailing slashes).
-- `DJANGO_DEBUG`: `False`.
-- `DATABASE_URL`: set the PostgreSQL connection string from Neon or another managed PostgreSQL provider. Keep the URL private; it contains the database credentials. Production settings require PostgreSQL and connect with SSL. Do not rely on the dyno's local SQLite file.
-- Once HTTPS is confirmed, set `DJANGO_SECURE_COOKIES=True` and `DJANGO_SECURE_SSL_REDIRECT=True`. Enable HSTS only after verifying the site works over HTTPS.
+2. **Create or select a Heroku app.** In the Heroku Dashboard, create an app and connect it to this GitHub repository for deployment, or configure the Heroku CLI and deploy the repository's selected branch. Ensure the app uses the Python buildpack.
 
-Create a managed PostgreSQL database (such as Neon), then put its connection URL in Heroku **Settings → Config Vars** as `DATABASE_URL`. Do not paste the connection URL into source code or commit it. The app parses this URL, requires SSL for PostgreSQL, and runs migrations in the Heroku release phase. Generate a secret locally without putting it in the repository, then set it on the app:
+3. **Configure a persistent PostgreSQL database.** Attach a Heroku Postgres database (or another supported PostgreSQL provider) to the app. Heroku should provide `DATABASE_URL`; confirm that it is set and points to PostgreSQL. This project intentionally rejects SQLite as its production database.
 
-```powershell
-$secret = python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
-heroku config:set "DJANGO_SECRET_KEY=$secret" "DJANGO_DEBUG=False" "DJANGO_ALLOWED_HOSTS=your-app-name.herokuapp.com" --app your-app-name
-```
+4. **Set production Config Vars** in the app's Settings page. Do not commit these values to the repository:
 
-Replace both example app names with your actual Heroku app name. Then redeploy. The build runs `collectstatic`; the `Procfile` starts Gunicorn. If collection still fails, inspect the full build log above Heroku's generic collectstatic message—the underlying traceback is needed to diagnose a different failure. Do not disable static collection as a workaround because the app's styles and JavaScript are served as static assets.
+   | Config Var | Value |
+   | --- | --- |
+   | `DJANGO_SECRET_KEY` | A unique, randomly generated secret. For example, generate one locally with `python -c "import secrets; print(secrets.token_urlsafe(64))"` and enter the result in Heroku. |
+   | `DJANGO_DEBUG` | `False` |
+   | `DJANGO_ALLOWED_HOSTS` | The Heroku hostname, such as `your-app-name.herokuapp.com`; include any custom domain hostnames as comma-separated values. |
+   | `CSRF_TRUSTED_ORIGINS` | The HTTPS origin, such as `https://your-app-name.herokuapp.com`; include any custom domain origins as comma-separated values. |
+   | `DJANGO_SECURE_COOKIES` | `True` when the production site is served over HTTPS. |
+   | `DJANGO_SECURE_SSL_REDIRECT` | `True` when HTTPS is configured for the app. |
+
+   The application defaults `DEBUG` to off, but explicitly set these values for clarity. Set `DATABASE_URL` through the database provider rather than copying credentials into source files.
+
+5. **Deploy the selected commit.** Trigger deployment from the Heroku Dashboard or push the selected branch to the Heroku Git remote. During the release, the `Procfile` runs `python manage.py migrate`. The Python build process collects static files for WhiteNoise.
+
+6. **Create an administrator account** if one does not already exist:
+
+   ```powershell
+   heroku run python manage.py createsuperuser --app your-app-name
+   ```
+
+7. **Verify the live deployment.** Open the Heroku app URL and check catalog browsing, registration and login, tracker access, community posting/commenting, and the contact page. Confirm that static assets load and that the Django admin is available to the administrator. Check the Heroku release and application logs if a deploy or request fails. Compare the deployed version with the GitHub commit that was deployed; local test results alone do not verify production configuration.
+
+Uploaded media files are stored on the application filesystem by default, which is not durable across Heroku dyno restarts or deployments. Use persistent object storage for production uploads before relying on uploaded covers being retained.
 
 ### AI-assisted development reflection
 
-Copilot assisted with the Django project structure, feature implementation, and tests. The generated work was adapted to this project's model relationships and ownership rules, and validation tests were added for episode caps, post length, and duplicate registration email. Running the test suite exposed implementation issues early and provided a repeatable check of the main user flows. Shared templates and a small set of responsive styles keep the experience consistent without introducing a frontend framework.
+I used the built-in Copilot to support the development of this application, including establishing its structure, refining the user experience, and identifying accessibility improvements informed by WCAG guidance. Testing helped guide those UX changes: responsive checks exposed horizontal overflow on narrow screens, so I adjusted the layout and verified it at 320, 390, 768, and 1,280 CSS-pixel widths. Accessibility review also highlighted low-contrast form/control borders and navigation links that were difficult to distinguish. I increased the control-border contrast and made navigation links more identifiable with underlines and additional padding. Browser tests now check the skip link's keyboard access and verify that the page does not overflow at common viewport widths. Copilot helped me write and run automated tests, investigate bugs, and work through technical issues as I developed and scoped the project.
+
+I encountered several critical errors during development and had to restart the project more than once. Copilot helped me understand and resolve these challenges, and supported me in completing the application on time and to the standard I was aiming for. I reviewed and tested the resulting work as part of the development process.
+
+### Considerations for next updates
+
+- **Improve contact request handling:** Add optional email notifications for staff and an acknowledgement for the sender. Add rate limiting or spam protection before enabling email delivery.
+- **Add community moderation tools:** Let staff review or remove inappropriate posts and comments, and give users a way to report content.
+- **Expand account support:** Add password-reset and email-verification flows, with clear guidance for users who lose access to their account.
+- **Strengthen accessibility verification:** Continue page-by-page keyboard and screen-reader testing, check text and control contrast, and add automated accessibility checks to the development workflow.
+- **Expand end-to-end coverage:** Add browser checks for invalid form submissions, logged-out restrictions, and other accessibility interactions as the application evolves.
+- **Use durable production media storage:** Store uploaded anime covers in persistent object storage so they remain available across deployments and dyno restarts.
