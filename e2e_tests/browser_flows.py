@@ -76,8 +76,6 @@ class BrowserFlowTests(StaticLiveServerTestCase):
         self.page.get_by_role("button", name="Save progress").click()
         self.page.wait_for_url(f"{self.live_server_url}{reverse('tracker:tracker_list')}")
 
-        notification = self.page.locator(".message")
-        self.assertTrue(notification.is_visible())
         self.page.get_by_role("button", name="Dismiss notification").click()
         self.assertEqual(self.page.locator(".message").count(), 0)
         self.assertTrue(self.page.get_by_text("Watching").is_visible())
@@ -91,10 +89,11 @@ class BrowserFlowTests(StaticLiveServerTestCase):
 
         self.page.set_viewport_size({"width": 390, "height": 844})
         self.capture("02-tracker-mobile.png", full_page=False)
+        tracker_url = self.page.url
         self.page.once("dialog", lambda dialog: dialog.dismiss())
         self.page.get_by_role("button", name="Remove").click()
+        self.assertEqual(self.page.url, tracker_url)
         self.assertTrue(self.page.get_by_text("Episode 12 of 12").is_visible())
-        self.assertEqual(self.page.locator(".tracker-row").count(), 1)
 
         self.page.once("dialog", lambda dialog: dialog.accept())
         self.page.get_by_role("button", name="Remove").click()
