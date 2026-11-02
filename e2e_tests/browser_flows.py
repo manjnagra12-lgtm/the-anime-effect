@@ -51,6 +51,15 @@ class BrowserFlowTests(StaticLiveServerTestCase):
                 full_page=full_page,
             )
 
+    def assert_no_horizontal_overflow(self):
+        dimensions = self.page.evaluate(
+            """() => ({
+                width: document.documentElement.clientWidth,
+                scrollWidth: document.documentElement.scrollWidth
+            })"""
+        )
+        self.assertLessEqual(dimensions["scrollWidth"], dimensions["width"])
+
     def register(self, username):
         self.page.goto(f"{self.live_server_url}{reverse('register')}")
         self.page.locator("#id_username").fill(username)
@@ -78,6 +87,8 @@ class BrowserFlowTests(StaticLiveServerTestCase):
 
         self.assertTrue(self.page.get_by_text("Watching").is_visible())
         self.assertTrue(self.page.get_by_text("Episode 4 of 12").is_visible())
+        self.page.get_by_role("button", name="Dismiss notification").click()
+        self.assertEqual(self.page.locator(".message").count(), 0)
         self.page.get_by_role("link", name="Update").click()
         self.page.locator("#id_status").select_option(label="Completed")
         self.page.locator("#id_current_episode").fill("12")
@@ -85,8 +96,14 @@ class BrowserFlowTests(StaticLiveServerTestCase):
         self.page.wait_for_url(f"{self.live_server_url}{reverse('tracker:tracker_list')}")
         self.assertTrue(self.page.get_by_text("Episode 12 of 12").is_visible())
 
+        for width in (320, 390, 768, 1280):
+            self.page.set_viewport_size({"width": width, "height": 900})
+            self.assert_no_horizontal_overflow()
         self.page.set_viewport_size({"width": 390, "height": 844})
         self.capture("02-tracker-mobile.png", full_page=False)
+        self.page.once("dialog", lambda dialog: dialog.dismiss())
+        self.page.get_by_role("button", name="Remove").click()
+        self.assertTrue(self.page.get_by_text("Episode 12 of 12").is_visible())
         self.page.once("dialog", lambda dialog: dialog.accept())
         self.page.get_by_role("button", name="Remove").click()
         self.assertTrue(self.page.get_by_text("Your tracker is waiting for a first pick.").is_visible())
@@ -105,6 +122,8 @@ class BrowserFlowTests(StaticLiveServerTestCase):
         self.assertTrue(
             self.page.get_by_text("Your post was published.").is_visible()
         )
+        self.page.get_by_role("button", name="Dismiss notification").click()
+        self.assertEqual(self.page.locator(".message").count(), 0)
 
         self.page.get_by_role(
             "link", name="View 0 comments · Join the discussion"
@@ -117,6 +136,10 @@ class BrowserFlowTests(StaticLiveServerTestCase):
         self.assertTrue(
             self.page.get_by_role("heading", name="Comments (1)").is_visible()
         )
+        for width in (320, 390, 768, 1280):
+            self.page.set_viewport_size({"width": width, "height": 900})
+            self.assert_no_horizontal_overflow()
+        self.page.set_viewport_size({"width": 1440, "height": 1000})
         self.capture("03-community-post-and-comment.png")
         self.close_browser()
         self.assertEqual(BlogPost.objects.count(), 1)
@@ -153,27 +176,28 @@ class BrowserFlowTests(StaticLiveServerTestCase):
         )
 
     def test_discover_reflows_and_skip_link_is_keyboard_reachable(self):
-        self.page.goto(self.live_server_url)
+        self.page.goto(f"{self.live_server_url}{reverse('catalog:anime_list')}")
         self.page.keyboard.press("Tab")
         self.assertEqual(
             self.page.evaluate("document.activeElement.getAttribute('href')"),
             "#main-content",
         )
 
-        layouts = []
-        for width in (320, 390, 768, 1280):
-            self.page.set_viewport_size({"width": width, "height": 900})
-            layouts.append(
-                self.page.evaluate(
-                    """() => ({
-                        width: document.documentElement.clientWidth,
-                        scrollWidth: document.documentElement.scrollWidth
-                    })"""
-                )
-            )
-        self.assertTrue(
-            all(layout["scrollWidth"] <= layout["width"] for layout in layouts),
-            layouts,
+        paths = (
+            reverse("catalog:anime_list"),
+            reverse("catalog:anime_detail", args=[self.anime.pk]),
+            reverse("about"),
+            reverse("contact:contact"),
+            reverse("social:post_list"),
+            reverse("login"),
+            reverse("register"),
         )
+        for path in paths:
+            for width in (320, 390, 768, 1280):
+                self.page.set_viewport_size({"width": width, "height": 900})
+                self.page.goto(f"{self.live_server_url}{path}")
+                with self.subTest(path=path, width=width):
+                    self.assert_no_horizontal_overflow()
         self.page.set_viewport_size({"width": 390, "height": 844})
+        self.page.goto(f"{self.live_server_url}{reverse('catalog:anime_list')}")
         self.capture("05-discover-mobile.png", full_page=False)

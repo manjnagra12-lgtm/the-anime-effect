@@ -7,7 +7,7 @@ As an avid fan of animation, I wanted to build more than a static database. **My
 
 ### 🛠️ Technical Focus & Learning Objectives
 This application was engineered from scratch to demonstrate production-ready proficiency across several core pillars of full-stack development:
-* **Agile Planning (LO1.3):** Built using an incremental, user-story-driven workflow to track milestones and deliverables.
+* **Agile Planning (LO1.3):** Built using an incremental, user-story-driven workflow. The [GitHub Projects board](https://github.com/users/manjnagra12-lgtm/projects/6) currently shows all 10 user stories in Done, with none in Backlog, Ready, In progress, or In review (checked 2 November 2026).
 * **Robust Backend Architecture (LO1.2/2.1):** Powered by Django's ORM with a custom database schema, strict validation constraints, and relational data integrity.
 * **Role-Based Access Control (LO3):** Implements secure, granular permissions differentiating standard users from site administrators to safeguard data modifications.
 * **Accessibility-focused UX/UI Design (LO1.1):** Uses semantic templates, visible keyboard focus, labeled forms, and responsive CSS; accessibility checks and remaining limitations are documented below.
@@ -465,10 +465,10 @@ Remove-Item Env:E2E_SCREENSHOT_DIR
 
 The four browser tests cover:
 
-- Account registration followed by adding, updating, and removing a tracker entry.
-- Publishing a community post and adding a comment.
+- Account registration followed by adding, updating, and removing a tracker entry; cancelling the removal keeps the entry.
+- Publishing a community post, dismissing its success notification, and adding a comment.
 - Checking invalid-email browser validation, then submitting a valid contact request and verifying it reaches the admin inbox.
-- Keyboard access to the skip link and no horizontal overflow at 320, 390, 768, and 1,280 CSS pixels.
+- Keyboard access to the skip link and horizontal-overflow checks on seven public page types at 320, 390, 768, and 1,280 CSS-pixel viewport widths. The signed-in tracker and post-detail/comment flows are also checked at those widths.
 
 The standard Django suite remains separate at 29 tests; the optional browser suite has four tests and is run explicitly with the command above.
 
@@ -494,19 +494,20 @@ Screenshots are opt-in and are written to the directory named by `E2E_SCREENSHOT
 
 ![Discover page at mobile width during the browser test](docs/screenshots/e2e/05-discover-mobile.png)
 
-Manual browser checks (including the small JavaScript interactions):
+Recorded browser-check results (including JavaScript interactions):
 
-| Check | Expected result |
+| Check | Result |
 | --- | --- |
-| Resize the catalog, detail, tracker, feed, About, and Contact pages from 320 px mobile width through tablet, desktop, and ultrawide widths | No horizontal overflow; content and controls remain available, with more catalog columns on wide displays |
-| Use Tab/Shift+Tab and Enter from the top of each page | Focus indicator is visible and links/forms remain usable |
-| Dismiss a success notification | The selected notification disappears |
-| Submit a tracker removal, then cancel the confirmation | The entry remains; confirming removes only the signed-in user's entry |
-| Try an invalid episode count, an overlong post, and an invalid contact email | The form stays open and displays a field-specific validation message |
-| Open another user's post edit/delete URL | The request is denied (404) and the post remains unchanged |
-| Open the catalog when a saved cover image is unavailable | A matching bundled static cover is used, or a title placeholder is shown |
+| Resize Discover, anime detail, About, Contact, Community, Log in, and Register pages to 320, 390, 768, and 1,280 CSS-pixel viewport widths | **Pass** — no document-level horizontal overflow in the Playwright browser checks |
+| Resize the signed-in tracker and post-detail/comment flow to the same viewport widths | **Pass** — no document-level horizontal overflow in the Playwright browser checks |
+| Press Tab from the top of Discover | **Pass** — focus reaches the skip link, which targets `#main-content` |
+| Dismiss tracker and post-publication success notifications | **Pass** — the selected notification is removed from the page |
+| Cancel and then confirm tracker removal | **Pass** — cancelling leaves the entry visible; confirming removes it |
+| Submit an invalid contact email, then a valid request | **Pass** — browser email validation blocks the invalid value; the valid request is saved to the admin inbox |
+| Validate episode limits, post length, and author-only editing/deletion | **Pass** — covered by the standard Django test suite; these checks are not represented as browser tests |
+| Exercise normal form labels and automated accessibility rules on the seven audited public page types | **Pass with limitations** — see the [accessibility audit](docs/accessibility-audit.md) for axe results and incomplete checks |
 
-These are repeatable checks for manual use; automated Django test results are listed above.
+These are recorded automated browser and Django test outcomes, not a claim that every interaction has been manually tested. Screen-reader operation and 200% browser zoom/text resizing remain outstanding manual checks; responsive viewport measurements do not substitute for either.
 
 #### Manual browser screenshots
 
@@ -573,6 +574,8 @@ I used the built-in Copilot to support the development of this application, incl
 I encountered several critical errors during development and had to restart the project more than once. Copilot helped me understand and resolve these challenges, and supported me in completing the application on time and to the standard I was aiming for. I reviewed and tested the resulting work as part of the development process.
 
 Because of time constraints and development challenges, I relied heavily on Copilot while building the blog and comments features with Django. Its step-by-step explanations helped me understand the implementation and add these features to the project.
+
+One specific example of this assistance was building browser-test journeys for registration and watchlist updates, community posts and comments, and contact requests. I reviewed the test flows and extended them to check that dismissing a success notification removes it, cancelling a tracker deletion preserves the entry, and confirming the deletion removes it. I also extended the responsive checks across public pages and signed-in tracker/comment pages. The current optional Playwright suite passes all four browser tests, while the separate Django suite verifies model, form, and permission behavior. This testing helped me check Copilot-assisted work against observable results rather than relying on generated code alone.
 
 ### Considerations for next updates
 

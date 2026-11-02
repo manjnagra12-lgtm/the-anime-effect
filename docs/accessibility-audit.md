@@ -13,7 +13,7 @@ The audit combined an automated axe-core scan with source/style inspection and f
 - Scanned Discover, anime detail, About, Contact, Community, Log in, and Register pages. The local database contained catalog content for the Discover and detail checks.
 - Inspected visible field labels and keyboard focus on Contact, Log in, and Register. Verified the first Tab stop reaches the skip link on Discover; the existing browser test asserts this behavior.
 - Measured representative foreground/background color pairs from `static/css/site.css` using the WCAG relative-luminance contrast formula.
-- The existing Chromium browser test checks Discover for horizontal overflow at 320, 390, 768, and 1,280 CSS pixels.
+- The Chromium browser tests check seven public page types for horizontal overflow at 320, 390, 768, and 1,280 CSS pixels. They also check the signed-in tracker and post-detail/comment flows at those widths.
 
 ## Results
 
@@ -23,7 +23,7 @@ The audit combined an automated axe-core scan with source/style inspection and f
 | Keyboard skip link and focus indicator | **Pass for checked behavior** | The first Tab stop on Discover is “Skip to content”; the browser test confirms it targets `#main-content`. Focus styling uses a 3 px mint outline. |
 | Form labels | **Pass for checked forms** | Contact, login, and registration inputs expose associated labels. axe reported no form-label violations on those pages. |
 | Sampled text contrast | **Pass for sampled pairs** | Ratios below meet or exceed 4.5:1 for normal text. Values are listed below. |
-| Responsive reflow | **Pass for measured page and widths** | Discover had no horizontal overflow at 320, 390, 768, and 1,280 CSS pixels. Other pages and text resizing were not measured at every width. |
+| Responsive reflow | **Pass for measured pages and widths** | Discover, anime detail, About, Contact, Community, Log in, and Register had no document-level horizontal overflow at 320, 390, 768, and 1,280 CSS pixels. The signed-in tracker and post-detail/comment flows also passed at those widths. This is a viewport-width check, not an actual browser zoom or text-resize test. |
 
 ### Sampled contrast ratios
 
@@ -45,9 +45,8 @@ The hero supporting-text color was adjusted during this audit. Before the adjust
 ## Limitations and follow-up
 
 - axe cannot fully evaluate text over CSS gradients. The hero text was checked against its brightest gradient stop, but this does not replace pixel-level checks of all gradient and overlay combinations.
-- Authenticated tracker and community states, staff/admin screens, validation-error states, and all focus/hover combinations were not included in the axe page scan.
-- No screen-reader testing, browser zoom/text-resize test, forced-colors/high-contrast test, or cross-browser audit was performed.
-- The responsive browser assertion covers Discover only. Repeat the reflow check on detail, tracker, community, and form pages.
+- Authenticated tracker and community states, staff/admin screens, validation-error states, and all focus/hover combinations were not included in the axe page scan. The separate browser suite does check reflow on the authenticated tracker and comment flow.
+- No screen-reader testing, actual 200% browser zoom/text-resize test, forced-colors/high-contrast test, or cross-browser audit was performed.
 - Automated scans can miss usability and assistive-technology issues. Continue manual keyboard and screen-reader testing, especially through registration, tracker updates, post/comment forms, and validation errors.
 
 To reproduce the automated scan, run the app locally and use axe DevTools or inject axe-core 4.10.3 into each page in Chromium. Re-run after changes to shared templates, colors, forms, or responsive styles, and record the scanner version and any incomplete results.
