@@ -1,6 +1,7 @@
 import os
 import sys
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
@@ -88,16 +89,36 @@ if not DEBUG and not DATABASE_URL and not IS_COLLECTSTATIC:
         "DATABASE_URL must be set in production. Configure a persistent database; "
         "the Heroku filesystem is not persistent."
     )
+if (
+    not DEBUG
+    and DATABASE_URL
+    and urlsplit(DATABASE_URL).scheme.lower() not in {"postgres", "postgresql"}
+):
+    raise ImproperlyConfigured(
+        "Production DATABASE_URL must use PostgreSQL. Configure the Neon or Heroku "
+        "PostgreSQL connection URL."
+    )
 
 default_database_name = (
     "static-build.sqlite3" if IS_COLLECTSTATIC else "db.sqlite3"
 )
+database_url = DATABASE_URL or f"sqlite:///{(BASE_DIR / default_database_name).as_posix()}"
 DATABASES = {
-    "default": dj_database_url.config(
-        default=DATABASE_URL or f"sqlite:///{(BASE_DIR / default_database_name).as_posix()}"
-    )
+    "default": dj_database_url.parse(
+        database_url,
+        conn_max_age=600,
+        ssl_require=database_url.lower().startswith(("postgres://", "postgresql://")),
+    ),
 }
-DATABASES["default"]["CONN_MAX_AGE"] = 600
+
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip().rstrip("/")
+    for origin in os.environ.get(
+        "CSRF_TRUSTED_ORIGINS",
+        "https://*.herokuapp.com,https://*.codeinstitute-ide.net",
+    ).split(",")
+    if origin.strip()
+]
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},

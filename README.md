@@ -273,10 +273,11 @@ The app loads `.env` for local development and reads deployment values from envi
 | `DJANGO_SECRET_KEY` or `SECRET_KEY` | Django signing key; required when debug is off and must be private | No production default |
 | `DJANGO_DEBUG` | Enables Django debug mode when set to `true`, `1`, or `yes` | `False` |
 | `DJANGO_ALLOWED_HOSTS` | Comma-separated hostnames | `localhost,127.0.0.1` |
+| `CSRF_TRUSTED_ORIGINS` | Comma-separated trusted HTTPS origins; entries are normalized without trailing slashes | Heroku and Code Institute HTTPS subdomains |
 | `DJANGO_SECURE_COOKIES` | Marks session and CSRF cookies as HTTPS-only | `False` |
 | `DJANGO_SECURE_SSL_REDIRECT` | Redirects HTTP requests to HTTPS (enable only behind a TLS-terminating proxy) | `False` |
 | `DJANGO_SECURE_HSTS_SECONDS` | HSTS duration in seconds; enable only after HTTPS is confirmed | `0` |
-| `DATABASE_URL` | Optional database URL supported by `dj-database-url` | Local `db.sqlite3` |
+| `DATABASE_URL` | PostgreSQL connection URL; required in production. PostgreSQL connections use SSL. | Local `db.sqlite3` |
 
 Never commit `.env`, production credentials, or a production secret key. `.gitignore` excludes `.env`, `.env.*`, key files, and the `secrets/` directory; `.env.example` is the only environment-file exception and must contain placeholders only. Django refuses to start in production mode without `DJANGO_SECRET_KEY` or when the example placeholder is used. Set production secrets directly in the hosting provider's secret/environment settings, not in source files or browser JavaScript. If the application later uses an external API, read its key on the server from an environment variable (for example `os.environ["ANIME_PROVIDER_API_KEY"]`) and never render it into a template or static asset. Set `DJANGO_DEBUG=False`, configure the deployed hostname in `DJANGO_ALLOWED_HOSTS`, and enable secure cookies/HTTPS redirect/HSTS only when the host is serving HTTPS through a trusted TLS-terminating proxy.
 
@@ -319,7 +320,7 @@ These are repeatable checks for manual use; automated Django test results are li
 
 ### Deployment
 
-The repository includes a `Procfile` for a WSGI host. Its Heroku `release` process runs `python manage.py migrate` on each deploy, and its `web` process starts Gunicorn. Configure `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_SECURE_COOKIES=True`, `DJANGO_SECURE_SSL_REDIRECT=True`, `DJANGO_SECURE_HSTS_SECONDS` (after HTTPS is verified), and a persistent `DATABASE_URL` in the host's environment; do not use the local SQLite file as production storage. During Heroku's build, `collectstatic` can run before runtime config vars are available, so settings allow that command alone to use a temporary build-only key and SQLite database. This build-only configuration is not used by the web or release processes; the app still requires a production secret and database at runtime. The release process applies migrations:
+The repository includes a `Procfile` for a WSGI host. Its Heroku `release` process runs `python manage.py migrate` on each deploy, and its `web` process starts Gunicorn. Configure `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_SECURE_COOKIES=True`, `DJANGO_SECURE_SSL_REDIRECT=True`, `DJANGO_SECURE_HSTS_SECONDS` (after HTTPS is verified), and a persistent PostgreSQL `DATABASE_URL` in the host's environment; do not use the local SQLite file as production storage. PostgreSQL connections are configured to require SSL, including Neon. During Heroku's build, `collectstatic` can run before runtime config vars are available, so settings allow that command alone to use a temporary build-only key and SQLite database. This build-only configuration is not used by the web or release processes; the app still requires a production secret and database at runtime. The release process applies migrations:
 
 ```sh
 python -m pip install -r requirements.txt
@@ -334,11 +335,12 @@ Heroku does not read the repository's local `.env` file. Add config vars in **He
 
 - `DJANGO_SECRET_KEY`: a newly generated, private Django secret. Settings also accept Heroku's conventional `SECRET_KEY` name.
 - `DJANGO_ALLOWED_HOSTS`: your app hostname, for example `your-app-name.herokuapp.com` (add any custom hostname as a comma-separated value).
+- `CSRF_TRUSTED_ORIGINS`: trusted HTTPS origins, for example `https://your-app-name.herokuapp.com` (add any custom domain's HTTPS origin as another comma-separated value; do not add trailing slashes).
 - `DJANGO_DEBUG`: `False`.
-- `DATABASE_URL`: configure a persistent production database (for example, attach a Heroku Postgres database); required in production. Do not rely on the dyno's local SQLite file.
+- `DATABASE_URL`: set the PostgreSQL connection string from Neon or another managed PostgreSQL provider. Keep the URL private; it contains the database credentials. Production settings require PostgreSQL and connect with SSL. Do not rely on the dyno's local SQLite file.
 - Once HTTPS is confirmed, set `DJANGO_SECURE_COOKIES=True` and `DJANGO_SECURE_SSL_REDIRECT=True`. Enable HSTS only after verifying the site works over HTTPS.
 
-Attach/configure the production database first so Heroku provides `DATABASE_URL`. Generate a secret locally without putting it in the repository, then set it on the app:
+Create a managed PostgreSQL database (such as Neon), then put its connection URL in Heroku **Settings → Config Vars** as `DATABASE_URL`. Do not paste the connection URL into source code or commit it. The app parses this URL, requires SSL for PostgreSQL, and runs migrations in the Heroku release phase. Generate a secret locally without putting it in the repository, then set it on the app:
 
 ```powershell
 $secret = python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
