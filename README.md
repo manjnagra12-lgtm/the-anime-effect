@@ -258,7 +258,7 @@ The project uses Django with SQLite by default, so the database starts empty and
 
 Use `/admin/` to add anime records. Staff accounts can also add, edit, and delete catalog entries in the site UI. Public account registration is available from the navigation; registered users can maintain their own tracker and publish posts.
 
-Staff can choose an optional cover image when adding or editing an anime. Images are validated as actual image files and limited to 5 MB; uploaded covers appear on the Explore anime cards and anime detail pages. Local uploads are stored under `media/` (ignored by Git). In production, configure persistent or object storage for media and serve it through the hosting platform; Django's development media route is enabled only with `DJANGO_DEBUG=True`.
+Staff can choose an optional cover image when adding or editing an anime. Images are validated as actual image files and limited to 5 MB; uploaded covers appear on the Explore anime cards and anime detail pages. Local uploads are stored under `media/` (ignored by Git). For a bundled fallback cover, keep the file in `static/images/` with the same basename as the catalog record's image filename; Django uses that static asset if the uploaded media file is missing. In production, configure persistent or object storage for uploaded media and serve it through the hosting platform; Django's development media route is enabled only with `DJANGO_DEBUG=True`.
 
 ## How to use the site
 

@@ -33,16 +33,24 @@ class AnimeCatalogTests(TestCase):
         self.assertContains(response, "North Star")
 
     def test_missing_uploaded_cover_uses_matching_bundled_static_cover(self):
-        self.anime.image.name = "anime/black_clover.webp"
-        self.anime.save(update_fields=["image"])
+        with TemporaryDirectory() as media_root, override_settings(MEDIA_ROOT=media_root):
+            for filename in (
+                "black_clover.webp",
+                "ATTACKONTITAN.jpg",
+                "solo.webp",
+                "solo_s6qyDKK.webp",
+            ):
+                with self.subTest(filename=filename):
+                    self.anime.image.name = f"anime/{filename}"
+                    self.anime.save(update_fields=["image"])
 
-        list_response = self.client.get(reverse("catalog:anime_list"))
-        detail_response = self.client.get(
-            reverse("catalog:anime_detail", args=[self.anime.pk])
-        )
+                    list_response = self.client.get(reverse("catalog:anime_list"))
+                    detail_response = self.client.get(
+                        reverse("catalog:anime_detail", args=[self.anime.pk])
+                    )
 
-        self.assertContains(list_response, "/static/images/black_clover.webp")
-        self.assertContains(detail_response, "/static/images/black_clover.webp")
+                    self.assertContains(list_response, f"/static/images/{filename}")
+                    self.assertContains(detail_response, f"/static/images/{filename}")
 
     def test_non_staff_cannot_manage_catalog(self):
         User.objects.create_user(username="fan", password="secure-test-pass-123")
