@@ -78,9 +78,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
+DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
+if not DEBUG and not DATABASE_URL:
+    raise ImproperlyConfigured(
+        "DATABASE_URL must be set in production. Configure a persistent database; "
+        "the Heroku filesystem is not persistent."
+    )
+
 DATABASES = {
     "default": dj_database_url.config(
-        default=f"sqlite:///{(BASE_DIR / 'db.sqlite3').as_posix()}"
+        default=DATABASE_URL or f"sqlite:///{(BASE_DIR / 'db.sqlite3').as_posix()}"
     )
 }
 DATABASES["default"]["CONN_MAX_AGE"] = 600

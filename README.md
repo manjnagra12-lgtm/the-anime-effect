@@ -319,12 +319,11 @@ These are repeatable checks for manual use; automated Django test results are li
 
 ### Deployment
 
-The repository includes a `Procfile` for a WSGI host. Configure `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_SECURE_COOKIES=True`, `DJANGO_SECURE_SSL_REDIRECT=True`, `DJANGO_SECURE_HSTS_SECONDS` (after HTTPS is verified), and a persistent `DATABASE_URL` in the host's environment; do not use the local SQLite file as production storage. Then deploy these commands in the host's build/release process:
+The repository includes a `Procfile` for a WSGI host. Its Heroku `release` process runs `python manage.py migrate` on each deploy, and its `web` process starts Gunicorn. Configure `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_SECURE_COOKIES=True`, `DJANGO_SECURE_SSL_REDIRECT=True`, `DJANGO_SECURE_HSTS_SECONDS` (after HTTPS is verified), and a persistent `DATABASE_URL` in the host's environment; do not use the local SQLite file as production storage. The build collects static files, and the release process applies migrations:
 
 ```sh
 python -m pip install -r requirements.txt
 python manage.py collectstatic --noinput
-python manage.py migrate
 ```
 
 Start the web service with `gunicorn config.wsgi:application` (also defined in `Procfile`). Create a staff user with `python manage.py createsuperuser`, then enter catalog data through `/admin/`. Before launch, confirm debug mode is off, the production host is allowed, HTTPS is enabled by the platform, and the deployed catalog/authentication/tracker/blog flows work end to end.
@@ -336,10 +335,10 @@ Heroku does not read the repository's local `.env` file. Add config vars in **He
 - `DJANGO_SECRET_KEY`: a newly generated, private Django secret. Settings also accept Heroku's conventional `SECRET_KEY` name.
 - `DJANGO_ALLOWED_HOSTS`: your app hostname, for example `your-app-name.herokuapp.com` (add any custom hostname as a comma-separated value).
 - `DJANGO_DEBUG`: `False`.
-- `DATABASE_URL`: configure a persistent production database; do not rely on the dyno's local SQLite file.
+- `DATABASE_URL`: configure a persistent production database (for example, attach a Heroku Postgres database); required in production. Do not rely on the dyno's local SQLite file.
 - Once HTTPS is confirmed, set `DJANGO_SECURE_COOKIES=True` and `DJANGO_SECURE_SSL_REDIRECT=True`. Enable HSTS only after verifying the site works over HTTPS.
 
-Generate a secret locally without putting it in the repository, then set it on the app:
+Attach/configure the production database first so Heroku provides `DATABASE_URL`. Generate a secret locally without putting it in the repository, then set it on the app:
 
 ```powershell
 $secret = python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
