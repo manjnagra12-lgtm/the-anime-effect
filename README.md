@@ -10,8 +10,12 @@ This application was engineered from scratch to demonstrate production-ready pro
 * **Agile Planning (LO1.3):** Built using an incremental, user-story-driven workflow to track milestones and deliverables.
 * **Robust Backend Architecture (LO1.2/2.1):** Powered by Django's ORM with a custom database schema, strict validation constraints, and relational data integrity.
 * **Role-Based Access Control (LO3):** Implements secure, granular permissions differentiating standard users from site administrators to safeguard data modifications.
-* **Accessible UX/UI Design (LO1.1):** Uses responsive layouts and accessibility practices informed by WCAG; see the verification notes below for the checks completed and their limits.
+* **Accessible UX/UI Design (LO1.1):** Uses responsive CSS layouts and accessibility practices informed by WCAG guidance, including semantic landmarks, visible focus states, and form labels. These improvements do not constitute a formal WCAG conformance audit.
 * Static templates for reuse and to keep a consistant theme
+
+### Agile planning
+
+Project stories and delivery status are tracked in the [GitHub Projects board](https://github.com/users/manjnagra12-lgtm/projects/6/views/1). The board organizes work by status and links planned tasks to the project features. If the board is private, grant the assessor access or provide screenshots of the board and representative completed stories.
 
 ## User case stories
 
@@ -408,22 +412,6 @@ The implementation keeps the catalog and social feed public while gating tracker
 
 The shared header/navigation, page-specific content area, and footer provide a consistent structure. Catalog pages use a search bar followed by a responsive card grid; detail pages place show metadata and synopsis above a single tracker action; tracker pages put each title, status, progress bar, and controls together; community pages use stacked post cards with author/time metadata. The mobile adaptation keeps the same content order, wraps navigation, and stacks cards and tracker actions rather than hiding functionality. During implementation, the catalog and feed were paginated to keep longer manually entered datasets manageable.
 
-#### Accessibility verification status
-
-The project has had a targeted accessibility review, not a complete WCAG conformance audit. The review confirmed semantic landmarks and labeled form controls in the shared templates, a keyboard skip link, visible `:focus-visible` styles, reduced-motion support, and no horizontal overflow in Chromium at 320, 390, 768, and 1,280 CSS-pixel widths. The browser test confirms that Tab moves focus to the skip link; the app stylesheet defines the visible focus outline.
-
-Contrast ratios for selected shared color tokens were calculated using the WCAG relative-luminance formula:
-
-| Foreground and background | Contrast |
-| --- | ---: |
-| Primary text `#f4f3f8` on page `#11131b` | 16.79:1 |
-| Muted text `#a7a5b4` on page `#11131b` | 7.67:1 |
-| Accent link `#c4a4ff` on panel `#191b26` | 8.24:1 |
-| Focus indicator `#91e5cd` on page `#11131b` | 12.62:1 |
-| Control border `#777989` against page `#11131b` | 4.31:1 |
-
-These are checks of selected colors and shared patterns, not every rendered component or state. No automated full-page accessibility scanner, screen-reader audit, or assistive-technology test has been completed; therefore the project should not be described as fully WCAG-compliant based on this evidence alone.
-
 ### Tests
 
 Run the automated test suite with:
@@ -449,7 +437,7 @@ Coverage includes:
 - Contact form rendering, submission and validation, and staff access to the admin inbox.
 - About page content and shared social media links.
 
-The test suite verifies application behavior; it does not replace a full accessibility audit or testing with assistive technology.
+The test suite verifies application behavior; it does not replace manual browser checks for accessibility and responsive behavior.
 
 #### End-to-end browser tests
 
@@ -476,14 +464,15 @@ python manage.py test e2e_tests.browser_flows
 Remove-Item Env:E2E_SCREENSHOT_DIR
 ```
 
-The four browser tests cover:
+The five browser tests cover:
 
 - Account registration followed by adding, updating, and removing a tracker entry.
 - Publishing a community post and adding a comment.
 - Checking invalid-email browser validation, then submitting a valid contact request and verifying it reaches the admin inbox.
-- Dismissing a success notification, cancelling and confirming tracker removal, keyboard access to the skip link, and no horizontal overflow at 320, 390, 768, and 1,280 CSS pixels.
+- Keyboard access to the skip link and no horizontal overflow at 320, 390, 768, and 1,280 CSS pixels.
+- Dismissing a success notification and cancelling a tracker removal confirmation, verifying the tracker entry remains.
 
-The standard Django suite remains separate at 29 tests; the optional browser suite has four tests and is run explicitly with the command above.
+The standard Django suite remains separate at 29 tests; the optional browser suite has five tests and is run explicitly with the command above. Both suites passed in the current development environment: 29 Django tests and 5 Chromium browser tests, with no Django system-check issues.
 
 Screenshots are opt-in and are written to the directory named by `E2E_SCREENSHOT_DIR`. The screenshots shown here were captured from the local test server using the isolated test database; they are illustrative browser-test evidence, not screenshots of the deployed site or evidence of production data.
 
@@ -507,30 +496,17 @@ Screenshots are opt-in and are written to the directory named by `E2E_SCREENSHOT
 
 ![Discover page at mobile width during the browser test](docs/screenshots/e2e/05-discover-mobile.png)
 
-#### Test results and manual checks
+Browser-test and manual-check results:
 
-Results recorded on 2 November 2026:
-
-| Suite/check | Result |
+| Check | Result and evidence |
 | --- | --- |
-| Django unit and integration suite (`python manage.py test`) | **Pass** — 29 tests; Django system check reported no issues |
-| Chromium E2E suite (`python manage.py test e2e_tests.browser_flows`) | **Pass** — 4 tests; registration/tracker, community post/comment, contact validation/submission, skip-link access and responsive widths |
-| Success-notification dismissal and tracker-delete confirmation/cancellation | **Pass** — exercised in the Chromium E2E tracker flow |
-| Invalid episode progress, post length validation, user ownership, and missing-cover fallback | **Pass** — covered by the Django test suite |
-| Contact email format and 320/390/768/1,280 px page overflow | **Pass** — exercised in the Chromium E2E suite |
-| Full screen-reader, assistive-technology, and automated WCAG audit | **Not completed** |
-
-The following checks are also documented for repeatable manual review. Results above are limited to what was verified by the named automated suites; they should not be read as a claim that every page and browser combination was exhaustively tested.
-
-| Check | Expected result |
-| --- | --- |
-| Use Tab from the top of the Discover page | Focus reaches the skip-to-content link; visible focus styling is defined in CSS |
-| Resize Discover at 320, 390, 768, and 1,280 CSS pixels | No horizontal overflow in the Chromium browser test |
-| Dismiss a tracker success notification or cancel its removal prompt | Notification closes; cancelled removal leaves the entry in place (Chromium E2E) |
-| Submit invalid tracker progress or an overlong post | Form validation rejects invalid data (Django tests) |
-| Open another user's post edit/delete route | Access is denied and the post remains unchanged (Django tests) |
-| Load an anime whose uploaded cover is unavailable | Bundled cover fallback is used when available (Django test) |
-| Test navigation, contrast, and content with a screen reader | **Still requires manual assistive-technology review** |
+| Resize the Discover page at 320, 390, 768, and 1,280 CSS pixels | Passed in Playwright: no document horizontal overflow at these widths. Manual visual checks also covered the catalog, detail, tracker, community, About, and Contact pages at mobile and desktop widths. |
+| Use Tab from the top of Discover | Passed in Playwright: keyboard focus reaches the skip link targeting the main content. |
+| Dismiss a success notification; cancel a tracker removal confirmation | Passed in Playwright: the notification closes and cancelling leaves the tracker entry visible and stored. |
+| Submit an invalid contact email, then a valid request | Passed in Playwright: invalid email is blocked by browser validation; valid request is saved and confirmed. |
+| Submit invalid tracker progress or an overlong post/comment; try another user's post edit/delete route | Covered by Django form/view tests: invalid data is rejected and post changes are restricted to the author. |
+| Load a catalog record whose uploaded cover is unavailable | Covered by a Django test: the bundled fallback cover is used when available. |
+| Use the keyboard and screen reader throughout all pages; run a complete WCAG audit | Not fully verified. Continue manual assistive-technology and accessibility testing; responsive and focus checks alone do not prove WCAG conformance. |
 
 #### Manual browser screenshots
 
@@ -546,29 +522,26 @@ The following desktop screenshots were captured from the deployed site on 2 Nove
 
 ### Deployment
 
-The live application is hosted on Heroku: [The Anime Effect](https://theanimeeffect-72c5f4f763fb.herokuapp.com/). The deployment uses the `Procfile`: its release phase applies Django migrations, and Gunicorn serves `config.wsgi:application`. The project has been configured for PostgreSQL in production and WhiteNoise static-file serving. The deployed home page was reachable during the browser check on 2 November 2026; this check confirms availability, not every authenticated workflow or every runtime setting.
+The application is deployed on [Heroku](https://theanimeeffect-72c5f4f763fb.herokuapp.com/). The repository's [Procfile](Procfile) configures Gunicorn to serve Django and runs migrations in the release phase.
 
 #### Deploying to Heroku
 
-1. Create a Heroku app and provision a PostgreSQL database (or attach a supported PostgreSQL provider that supplies `DATABASE_URL`).
-2. Configure the app's Config Vars in the Heroku dashboard or CLI. At minimum, set a private `DJANGO_SECRET_KEY`, `DJANGO_DEBUG=False`, `DJANGO_ALLOWED_HOSTS` to the app hostname, and `CSRF_TRUSTED_ORIGINS` to its HTTPS origin. Confirm that `DATABASE_URL` points to the production PostgreSQL database. Never commit these values to Git.
-3. Keep HTTPS settings appropriate to the app's TLS setup. For an HTTPS Heroku app, enable `DJANGO_SECURE_COOKIES=True` and `DJANGO_SECURE_SSL_REDIRECT=True`; set `DJANGO_SECURE_HSTS_SECONDS` only after confirming HTTPS works reliably.
-4. Connect the GitHub repository to Heroku for automatic deploys, or deploy with the Heroku CLI from the repository:
+1. Create a Heroku app and connect it to this GitHub repository, or deploy the `main` branch using the Heroku CLI.
+2. Provision a PostgreSQL database and ensure its `DATABASE_URL` is available to the app. Production settings require PostgreSQL; SQLite is for local development only.
+3. Configure the app's Config Vars in Heroku. Set `DJANGO_SECRET_KEY` to a new private value, `DJANGO_DEBUG` to `False`, `DJANGO_ALLOWED_HOSTS` to the deployed hostname, and `CSRF_TRUSTED_ORIGINS` to the matching HTTPS origin. Do not commit these values to the repository. Set `DJANGO_SECURE_COOKIES=True` and `DJANGO_SECURE_SSL_REDIRECT=True` when HTTPS is active at the Heroku app.
+4. Deploy the application. Heroku runs `python manage.py migrate` as the release command and starts the web process with `gunicorn config.wsgi:application`. Static files are served through WhiteNoise.
+5. Create the first staff account using `heroku run python manage.py createsuperuser`.
+6. Open the deployed URL and verify that the site loads over HTTPS, static assets render, registration and login work, and catalog, tracker, community, and contact flows behave as expected. Check the Heroku Config Vars to confirm debug is disabled and the production database and secret key are configured.
 
-   ```powershell
-   heroku login
-   heroku git:remote -a <heroku-app-name>
-   git push heroku main
-   ```
-
-5. Check the build and release logs. The `release` command in `Procfile` runs `python manage.py migrate`; verify that it completes successfully and that the web process starts.
-6. Open the deployed site and smoke-test public pages, registration/login, tracker access, catalog management with a staff account, and community/contact flows. Confirm `DJANGO_DEBUG=False` and review production settings before sharing the deployment.
-
-For deployments from a non-`main` branch, push that branch to Heroku's `main` ref (for example, `git push heroku <branch-name>:main`). Run migrations through the release process rather than manually editing the production database.
+The deployed app currently uses the URL above. Uploaded media should use persistent object storage in production; files on an ephemeral application filesystem may not survive a deployment or restart.
 
 ### AI-assisted development reflection
 
-I used Copilot to help scaffold Django features and tests, then reviewed and adapted the code to fit the project's models, permissions, and user flows. During development, it helped me investigate the missing-cover fallback and small-screen horizontal overflow; I applied the fixes and checked them with Django and browser tests. Copilot also supported UX improvements such as clearer focus styling and contrast choices. I ran the generated and updated tests, corrected test assumptions when browser behavior differed from the initial implementation, and confirmed the final suites passed. This made it easier to work through critical errors and complete the project on time. I remain responsible for reviewing the generated code and test results; the accessibility review is targeted and is not a full WCAG certification.
+I used GitHub Copilot to help build Django features and templates, refine responsive layouts, and develop automated tests. For example, AI assistance helped investigate the missing-cover and narrow-screen overflow issues; the resulting changes added a bundled cover fallback and responsive behavior that was checked at mobile widths. Pagination was also added to keep longer catalog and community lists manageable; no formal performance benchmark was run.
+
+Copilot also supported debugging and test creation across registration, permissions, tracker validation, posts and comments, and contact submissions. I reviewed and adjusted the generated tests to check the intended outcomes, including data persistence and access restrictions. The current evidence is 29 passing Django tests and 5 passing Chromium browser tests. I used Copilot iteratively to work through critical errors and keep development moving, while reviewing and testing the changes before including them.
+
+AI-assisted accessibility and layout work provides evidence of design improvement, but it is not a substitute for a full WCAG audit or assistive-technology review.
 
 ### Considerations for next updates
 

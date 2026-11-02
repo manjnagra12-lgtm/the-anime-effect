@@ -76,8 +76,6 @@ class BrowserFlowTests(StaticLiveServerTestCase):
         self.page.get_by_role("button", name="Save progress").click()
         self.page.wait_for_url(f"{self.live_server_url}{reverse('tracker:tracker_list')}")
 
-        self.page.get_by_role("button", name="Dismiss notification").click()
-        self.assertEqual(self.page.locator(".message").count(), 0)
         self.assertTrue(self.page.get_by_text("Watching").is_visible())
         self.assertTrue(self.page.get_by_text("Episode 4 of 12").is_visible())
         self.page.get_by_role("link", name="Update").click()
@@ -89,18 +87,37 @@ class BrowserFlowTests(StaticLiveServerTestCase):
 
         self.page.set_viewport_size({"width": 390, "height": 844})
         self.capture("02-tracker-mobile.png", full_page=False)
-        tracker_url = self.page.url
-        self.page.once("dialog", lambda dialog: dialog.dismiss())
-        self.page.get_by_role("button", name="Remove").click()
-        self.assertEqual(self.page.url, tracker_url)
-        self.assertTrue(self.page.get_by_text("Episode 12 of 12").is_visible())
-
         self.page.once("dialog", lambda dialog: dialog.accept())
         self.page.get_by_role("button", name="Remove").click()
         self.assertTrue(self.page.get_by_text("Your tracker is waiting for a first pick.").is_visible())
         self.close_browser()
         self.assertTrue(User.objects.filter(username="e2e-tracker").exists())
         self.assertFalse(UserTracker.objects.filter(user__username="e2e-tracker").exists())
+
+    def test_notification_dismissal_and_cancelled_tracker_removal(self):
+        self.register("e2e-js")
+        self.page.goto(self.live_server_url)
+        self.page.locator(".anime-card a").filter(
+            has_text=self.anime.title
+        ).click()
+        self.page.get_by_role("link", name="Add to my tracker").click()
+        self.page.get_by_role("button", name="Save progress").click()
+        self.page.wait_for_url(f"{self.live_server_url}{reverse('tracker:tracker_list')}")
+
+        self.page.get_by_role("button", name="Dismiss notification").click()
+        self.assertEqual(self.page.locator(".message").count(), 0)
+        self.page.once("dialog", lambda dialog: dialog.dismiss())
+        self.page.get_by_role("button", name="Remove").click()
+        self.assertTrue(self.page.get_by_text(self.anime.title).is_visible())
+        self.assertTrue(self.page.get_by_text("Episode 0 of 12").is_visible())
+
+        self.close_browser()
+        self.assertTrue(
+            UserTracker.objects.filter(
+                user__username="e2e-js",
+                anime=self.anime,
+            ).exists()
+        )
 
     def test_registered_user_can_publish_post_and_comment(self):
         self.register("e2e-community")
