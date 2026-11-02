@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "catalog",
     "tracker",
     "social",
+    "contact",
 ]
 
 MIDDLEWARE = [

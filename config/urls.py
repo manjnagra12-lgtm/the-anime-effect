@@ -26,6 +26,7 @@ from . import auth_views as account_views
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("about/", TemplateView.as_view(template_name="about.html"), name="about"),
+    path("contact/", include("contact.urls")),
     path("accounts/register/", account_views.register, name="register"),
     path("accounts/login/", account_views.login_view, name="login"),
     path("accounts/logout/", auth_views.LogoutView.as_view(), name="logout"),

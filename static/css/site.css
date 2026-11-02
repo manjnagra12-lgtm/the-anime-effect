@@ -126,6 +126,8 @@ input::placeholder, textarea::placeholder { color: #898796; }
 .inline-actions form { margin: 0; }
 .form-panel { width: min(700px, 100%); margin: 16px auto; padding: clamp(25px, 5vw, 46px); border: 1px solid var(--line); border-radius: 16px; background: var(--panel); }
 .form-panel h1 { margin-bottom: 12px; font-size: clamp(2rem, 5vw, 3rem); }
+.contact-panel { max-width: 760px; }
+.contact-note { margin: 18px 0 0; padding: 12px 14px; border-left: 3px solid var(--mint); background: var(--panel-raised); color: var(--muted); font-size: .88rem; }
 .site-form { margin-top: 28px; }
 .site-form p { margin: 0 0 20px; }
 .site-form label { display: block; margin-bottom: 7px; color: #e3e1eb; font-size: .9rem; font-weight: 600; }

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Contact us · The Anime Effect{% endblock %}
+{% block content %}
+  <section class="form-panel contact-panel">
+    <p class="eyebrow">We’d love to hear from you</p>
+    <h1>Contact us<span class="text-accent">.</span></h1>
+    <p class="muted">Have a request, spotted something we should improve, or want to suggest an anime for the catalog? Send a note to the app admin using this form.</p>
+    <p class="contact-note">Messages are stored for the app admin to review in the Django admin area. Please don’t include passwords or other sensitive information.</p>
+    <form method="post" class="site-form">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      {{ form.as_p }}
+      <div class="form-actions">
+        <button class="button" type="submit">Send message</button>
+        <a class="button button-quiet" href="{% url 'catalog:anime_list' %}">Back to discover</a>
+      </div>
+    </form>
+  </section>
+{% endblock %}
