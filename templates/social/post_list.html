@@ -26,6 +26,7 @@
             {% if post.anime %}<a class="post-anime" href="{% url 'catalog:anime_detail' post.anime.pk %}">{{ post.anime.title }}</a>{% endif %}
           </header>
           <div class="post-content">{{ post.content|linebreaksbr }}</div>
+          <a class="comment-link" href="{% url 'social:post_detail' post.pk %}">View {{ post.comment_count }} comment{{ post.comment_count|pluralize }} · Join the discussion</a>
           {% if user.is_authenticated and user == post.author %}
             <footer class="inline-actions post-actions">
               <a class="button button-small button-quiet" href="{% url 'social:post_edit' post.pk %}">Edit</a>

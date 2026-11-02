@@ -4,8 +4,8 @@ from django.urls import reverse
 
 from catalog.models import Anime
 
-from .forms import BlogPostForm
-from .models import BlogPost
+from .forms import BlogPostForm, CommentForm
+from .models import BlogPost, Comment
 
 
 class CommunityFeedTests(TestCase):
@@ -30,6 +30,46 @@ class CommunityFeedTests(TestCase):
         response = self.client.get(reverse("social:post_list"))
         self.assertContains(response, "The soundtrack made the finale unforgettable.")
         self.assertContains(response, "Paper Comet")
+        self.assertContains(response, reverse("social:post_detail", args=[self.post.pk]))
+
+    def test_post_detail_shows_post_and_comments(self):
+        Comment.objects.create(
+            post=self.post,
+            author=self.other_user,
+            content="I loved that ending too.",
+        )
+        response = self.client.get(reverse("social:post_detail", args=[self.post.pk]))
+        self.assertContains(response, self.post.content)
+        self.assertContains(response, "I loved that ending too.")
+        self.assertContains(response, "Log in to comment")
+
+    def test_signed_in_user_can_comment_on_a_post(self):
+        self.client.force_login(self.other_user)
+        response = self.client.post(
+            reverse("social:post_detail", args=[self.post.pk]),
+            {"content": "I loved that ending too."},
+            follow=True,
+        )
+        self.assertContains(response, "Your comment was added.")
+        self.assertContains(response, "I loved that ending too.")
+        comment = Comment.objects.get(post=self.post)
+        self.assertEqual(comment.author, self.other_user)
+
+    def test_anonymous_user_is_redirected_to_login_to_comment(self):
+        response = self.client.post(
+            reverse("social:post_detail", args=[self.post.pk]),
+            {"content": "I loved that ending too."},
+        )
+        self.assertRedirects(
+            response,
+            f"{reverse('login')}?next={reverse('social:post_detail', args=[self.post.pk])}",
+        )
+        self.assertFalse(Comment.objects.filter(post=self.post).exists())
+
+    def test_comment_length_is_validated(self):
+        form = CommentForm({"content": "x" * (Comment.MAX_CONTENT_LENGTH + 1)})
+        self.assertFalse(form.is_valid())
+        self.assertIn("content", form.errors)
 
     def test_users_can_only_edit_or_delete_their_own_posts(self):
         self.client.force_login(self.other_user)

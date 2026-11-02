@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}{{ post.author.username }}’s post · The Anime Effect{% endblock %}
+{% block content %}
+  <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="{% url 'social:post_list' %}">Community</a><span aria-hidden="true">/</span><span>Post</span></nav>
+  <article class="post-card post-detail-card">
+    <header class="post-header">
+      <div class="avatar" aria-hidden="true">{{ post.author.username|first|upper }}</div>
+      <div>
+        <h2>{{ post.author.username }}</h2>
+        <time datetime="{{ post.created_at|date:'c' }}">{{ post.created_at|date:"M j, Y · g:i A" }}</time>
+      </div>
+      {% if post.anime %}<a class="post-anime" href="{% url 'catalog:anime_detail' post.anime.pk %}">{{ post.anime.title }}</a>{% endif %}
+    </header>
+    <div class="post-content">{{ post.content|linebreaksbr }}</div>
+    {% if user.is_authenticated and user == post.author %}
+      <footer class="inline-actions post-actions">
+        <a class="button button-small button-quiet" href="{% url 'social:post_edit' post.pk %}">Edit</a>
+        <a class="button button-small button-danger-quiet" href="{% url 'social:post_delete' post.pk %}">Delete</a>
+      </footer>
+    {% endif %}
+  </article>
+
+  <section class="comments-section" aria-labelledby="comments-heading">
+    <div class="section-heading">
+      <h2 id="comments-heading">Comments <span class="muted">({{ comments|length }})</span></h2>
+    </div>
+    {% if comments %}
+      <div class="comment-list">
+        {% for comment in comments %}
+          <article class="comment-card">
+            <header class="comment-header">
+              <strong>{{ comment.author.username }}</strong>
+              <time datetime="{{ comment.created_at|date:'c' }}">{{ comment.created_at|date:"M j, Y · g:i A" }}</time>
+            </header>
+            <div class="comment-content">{{ comment.content|linebreaksbr }}</div>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="muted">No comments yet. Start the conversation.</p>
+    {% endif %}
+
+    {% if user.is_authenticated %}
+      <section class="comment-form-panel" aria-labelledby="comment-form-heading">
+        <h3 id="comment-form-heading">Add a comment</h3>
+        <form method="post" class="site-form">
+          {% csrf_token %}
+          {{ form.non_field_errors }}
+          {{ form.as_p }}
+          <button class="button" type="submit">Post comment</button>
+        </form>
+      </section>
+    {% else %}
+      <p class="comment-login"><a class="button" href="{% url 'login' %}?next={{ request.path|urlencode }}">Log in to comment</a></p>
+    {% endif %}
+  </section>
+{% endblock %}
