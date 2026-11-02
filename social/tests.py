@@ -32,6 +32,20 @@ class CommunityFeedTests(TestCase):
         self.assertContains(response, "Paper Comet")
         self.assertContains(response, reverse("social:post_detail", args=[self.post.pk]))
 
+    def test_footer_shows_anime_effect_social_links(self):
+        response = self.client.get(reverse("social:post_list"))
+        for platform, url in [
+            ("Instagram", "https://www.instagram.com/theanimeeffect/"),
+            ("YouTube", "https://www.youtube.com/@theanimeeffect"),
+            ("X", "https://x.com/theanimeeffect"),
+            ("TikTok", "https://www.tiktok.com/@theanimeeffect"),
+        ]:
+            with self.subTest(platform=platform):
+                self.assertContains(response, f'aria-label="{platform}"')
+                self.assertContains(response, f'href="{url}"')
+        self.assertContains(response, "bi bi-instagram")
+        self.assertContains(response, 'rel="noopener noreferrer"')
+
     def test_post_detail_shows_post_and_comments(self):
         Comment.objects.create(
             post=self.post,
