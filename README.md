@@ -319,7 +319,7 @@ These are repeatable checks for manual use; automated Django test results are li
 
 ### Deployment
 
-The repository includes a `Procfile` for a WSGI host. Its Heroku `release` process runs `python manage.py migrate` on each deploy, and its `web` process starts Gunicorn. Configure `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_SECURE_COOKIES=True`, `DJANGO_SECURE_SSL_REDIRECT=True`, `DJANGO_SECURE_HSTS_SECONDS` (after HTTPS is verified), and a persistent `DATABASE_URL` in the host's environment; do not use the local SQLite file as production storage. The build collects static files, and the release process applies migrations:
+The repository includes a `Procfile` for a WSGI host. Its Heroku `release` process runs `python manage.py migrate` on each deploy, and its `web` process starts Gunicorn. Configure `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_SECURE_COOKIES=True`, `DJANGO_SECURE_SSL_REDIRECT=True`, `DJANGO_SECURE_HSTS_SECONDS` (after HTTPS is verified), and a persistent `DATABASE_URL` in the host's environment; do not use the local SQLite file as production storage. During Heroku's build, `collectstatic` can run before runtime config vars are available, so settings allow that command alone to use a temporary build-only key and SQLite database. This build-only configuration is not used by the web or release processes; the app still requires a production secret and database at runtime. The release process applies migrations:
 
 ```sh
 python -m pip install -r requirements.txt

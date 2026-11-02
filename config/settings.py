@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 
 import dj_database_url
@@ -9,6 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 load_dotenv(BASE_DIR / ".env")
 
+IS_COLLECTSTATIC = "collectstatic" in sys.argv[1:]
 DEBUG = os.environ.get("DJANGO_DEBUG", "False").lower() in {"true", "1", "yes"}
 SECRET_KEY = (
     os.environ.get("DJANGO_SECRET_KEY") or os.environ.get("SECRET_KEY") or ""
@@ -16,6 +18,8 @@ SECRET_KEY = (
 if not SECRET_KEY:
     if DEBUG:
         SECRET_KEY = "local-development-only-secret-key"
+    elif IS_COLLECTSTATIC:
+        SECRET_KEY = "collectstatic-build-only-key"
     else:
         raise ImproperlyConfigured(
             "Set DJANGO_SECRET_KEY or SECRET_KEY in the environment when DJANGO_DEBUG is False."
@@ -79,15 +83,18 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
-if not DEBUG and not DATABASE_URL:
+if not DEBUG and not DATABASE_URL and not IS_COLLECTSTATIC:
     raise ImproperlyConfigured(
         "DATABASE_URL must be set in production. Configure a persistent database; "
         "the Heroku filesystem is not persistent."
     )
 
+default_database_name = (
+    "static-build.sqlite3" if IS_COLLECTSTATIC else "db.sqlite3"
+)
 DATABASES = {
     "default": dj_database_url.config(
-        default=DATABASE_URL or f"sqlite:///{(BASE_DIR / 'db.sqlite3').as_posix()}"
+        default=DATABASE_URL or f"sqlite:///{(BASE_DIR / default_database_name).as_posix()}"
     )
 }
 DATABASES["default"]["CONN_MAX_AGE"] = 600
