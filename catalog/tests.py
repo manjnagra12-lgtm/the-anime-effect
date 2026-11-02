@@ -32,6 +32,18 @@ class AnimeCatalogTests(TestCase):
         self.assertContains(response, "Adventure, Sci-Fi")
         self.assertContains(response, "North Star")
 
+    def test_missing_uploaded_cover_uses_matching_bundled_static_cover(self):
+        self.anime.image.name = "anime/black_clover.webp"
+        self.anime.save(update_fields=["image"])
+
+        list_response = self.client.get(reverse("catalog:anime_list"))
+        detail_response = self.client.get(
+            reverse("catalog:anime_detail", args=[self.anime.pk])
+        )
+
+        self.assertContains(list_response, "/static/images/black_clover.webp")
+        self.assertContains(detail_response, "/static/images/black_clover.webp")
+
     def test_non_staff_cannot_manage_catalog(self):
         User.objects.create_user(username="fan", password="secure-test-pass-123")
         self.client.login(username="fan", password="secure-test-pass-123")

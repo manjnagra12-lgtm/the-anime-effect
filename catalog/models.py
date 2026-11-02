@@ -1,7 +1,9 @@
+from django.contrib.staticfiles import finders
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import Q
+from django.templatetags.static import static
 
 
 def validate_image_size(image):
@@ -33,3 +35,15 @@ class Anime(models.Model):
 
     def __str__(self):
         return self.title
+
+    @property
+    def cover_image_url(self):
+        if not self.image:
+            return ""
+        if self.image.storage.exists(self.image.name):
+            return self.image.url
+
+        bundled_cover = f"images/{self.image.name.rsplit('/', 1)[-1]}"
+        if finders.find(bundled_cover):
+            return static(bundled_cover)
+        return ""

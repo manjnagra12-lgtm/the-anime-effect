@@ -13,8 +13,8 @@
       {% endif %}
     </div>
     <h1>{{ anime.title }}</h1>
-    {% if anime.image %}
-      <img class="detail-cover" src="{{ anime.image.url }}" alt="Cover art for {{ anime.title }}">
+    {% if anime.cover_image_url %}
+      <img class="detail-cover" src="{{ anime.cover_image_url }}" alt="Cover art for {{ anime.title }}">
     {% endif %}
     <div class="detail-stats">
       <span>{{ anime.total_episodes }} episode{{ anime.total_episodes|pluralize }}</span>

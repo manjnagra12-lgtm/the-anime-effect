@@ -16,7 +16,7 @@
 }
 
 * { box-sizing: border-box; }
-body { margin: 0; min-width: 320px; background: var(--canvas); color: var(--ink); line-height: 1.6; }
+body { margin: 0; background: var(--canvas); color: var(--ink); line-height: 1.6; }
 a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
 a:hover { color: #decaff; }
 button, input, textarea, select { font: inherit; }

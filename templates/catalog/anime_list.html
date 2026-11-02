@@ -32,11 +32,13 @@
         {% for anime in anime_list %}
           <article class="anime-card">
             <a class="card-link" href="{% url 'catalog:anime_detail' anime.pk %}">
-              {% if anime.image %}
-                <img class="anime-cover" src="{{ anime.image.url }}" alt="Cover art for {{ anime.title }}" loading="lazy">
-              {% else %}
-                <div class="anime-cover anime-cover-placeholder" aria-hidden="true"><span>{{ anime.title|first|upper }}</span></div>
-              {% endif %}
+              {% with cover_url=anime.cover_image_url %}
+                {% if cover_url %}
+                  <img class="anime-cover" src="{{ cover_url }}" alt="Cover art for {{ anime.title }}" loading="lazy">
+                {% else %}
+                  <div class="anime-cover anime-cover-placeholder" aria-hidden="true"><span>{{ anime.title|first|upper }}</span></div>
+                {% endif %}
+              {% endwith %}
               <span class="card-kicker">{{ anime.studio|default:"Anime catalog" }}</span>
               <h3>{{ anime.title }}</h3>
               <p class="card-synopsis">{{ anime.synopsis|default:"Synopsis coming soon."|truncatewords:24 }}</p>
