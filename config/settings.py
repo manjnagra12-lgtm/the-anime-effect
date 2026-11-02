@@ -30,11 +30,6 @@ if not DEBUG and SECRET_KEY in {
     "local-development-only-secret-key",
 }:
     raise ImproperlyConfigured("Replace the example DJANGO_SECRET_KEY before production.")
-SECURE_COOKIES = os.environ.get("DJANGO_SECURE_COOKIES", "False").lower() in {
-    "true",
-    "1",
-    "yes",
-}
 ALLOWED_HOSTS = [
     host.strip()
     for host in os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
@@ -146,13 +141,11 @@ LOGOUT_REDIRECT_URL = "catalog:anime_list"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 if not DEBUG:
-    SESSION_COOKIE_SECURE = SECURE_COOKIES
-    CSRF_COOKIE_SECURE = SECURE_COOKIES
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_REFERRER_POLICY = "same-origin"
-    SECURE_SSL_REDIRECT = os.environ.get(
-        "DJANGO_SECURE_SSL_REDIRECT", "False"
-    ).lower() in {"true", "1", "yes"}
-    SECURE_HSTS_SECONDS = int(os.environ.get("DJANGO_SECURE_HSTS_SECONDS", "0"))
-    if SECURE_SSL_REDIRECT:
-        SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 31_536_000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

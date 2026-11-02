@@ -44,7 +44,7 @@ h2 { letter-spacing: -0.035em; }
 .hero { position: relative; display: flex; min-height: 335px; align-items: center; overflow: hidden; margin-bottom: 74px; padding: 52px clamp(28px, 7vw, 84px); border: 1px solid #383346; border-radius: 20px; background: radial-gradient(ellipse at 75% 30%, #493764 0, #29243b 28%, #1b1b2b 61%, #191b26 100%); }
 .hero-copy { position: relative; z-index: 1; max-width: 640px; }
 .hero h1 { max-width: 620px; margin: 7px 0 18px; }
-.hero-lede { max-width: 620px; color: var(--muted); font-size: 1.08rem; }
+.hero-lede { max-width: 620px; color: #adabb9; font-size: 1.08rem; }
 .eyebrow { margin: 0 0 10px; color: var(--mint); font-size: .76rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
 .text-accent { color: var(--accent); }
 .hero-orbit { position: absolute; top: 50%; right: 8%; display: grid; width: 190px; height: 190px; place-items: center; transform: translateY(-50%); border: 1px solid rgba(196,164,255,.25); border-radius: 50%; color: rgba(230,216,255,.72); font-size: 1.75rem; letter-spacing: .22em; }

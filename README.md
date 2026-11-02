@@ -7,10 +7,10 @@ As an avid fan of animation, I wanted to build more than a static database. **My
 
 ### 🛠️ Technical Focus & Learning Objectives
 This application was engineered from scratch to demonstrate production-ready proficiency across several core pillars of full-stack development:
-* **Agile Planning (LO1.3):** Planned and tracked with an incremental, user-story-driven workflow on the [GitHub Projects board](https://github.com/users/manjnagra12-lgtm/projects/6/views/1). The board links project work to the user stories below; make sure its sharing permissions allow assessors to view it.
+* **Agile Planning (LO1.3):** Built using an incremental, user-story-driven workflow to track milestones and deliverables.
 * **Robust Backend Architecture (LO1.2/2.1):** Powered by Django's ORM with a custom database schema, strict validation constraints, and relational data integrity.
 * **Role-Based Access Control (LO3):** Implements secure, granular permissions differentiating standard users from site administrators to safeguard data modifications.
-* **Accessible UX/UI Design (LO1.1):** Built with responsive layouts and accessibility practices such as semantic landmarks, labeled forms, keyboard focus indicators, and contrast improvements. Targeted checks are documented below; this project does not claim a formal audit proving zero WCAG errors.
+* **Accessibility-focused UX/UI Design (LO1.1):** Uses semantic templates, visible keyboard focus, labeled forms, and responsive CSS; accessibility checks and remaining limitations are documented below.
 * Static templates for reuse and to keep a consistant theme
 
 ## User case stories
@@ -310,16 +310,15 @@ The app loads `.env` for local development and reads deployment values from envi
 | `DJANGO_DEBUG` | Enables Django debug mode when set to `true`, `1`, or `yes` | `False` |
 | `DJANGO_ALLOWED_HOSTS` | Comma-separated hostnames | `localhost,127.0.0.1` |
 | `CSRF_TRUSTED_ORIGINS` | Comma-separated trusted HTTPS origins; entries are normalized without trailing slashes | Heroku and Code Institute HTTPS subdomains |
-| `DJANGO_SECURE_COOKIES` | Marks session and CSRF cookies as HTTPS-only | `False` |
-| `DJANGO_SECURE_SSL_REDIRECT` | Redirects HTTP requests to HTTPS (enable only behind a TLS-terminating proxy) | `False` |
-| `DJANGO_SECURE_HSTS_SECONDS` | HSTS duration in seconds; enable only after HTTPS is confirmed | `0` |
 | `DATABASE_URL` | PostgreSQL connection URL; required in production. PostgreSQL connections use SSL. | Local `db.sqlite3` |
 
-Never commit `.env`, production credentials, or a production secret key. `.gitignore` excludes `.env`, `.env.*`, key files, and the `secrets/` directory; `.env.example` is the only environment-file exception and must contain placeholders only. Django refuses to start in production mode without `DJANGO_SECRET_KEY` or when the example placeholder is used. Set production secrets directly in the hosting provider's secret/environment settings, not in source files or browser JavaScript. If the application later uses an external API, read its key on the server from an environment variable (for example `os.environ["ANIME_PROVIDER_API_KEY"]`) and never render it into a template or static asset. Set `DJANGO_DEBUG=False`, configure the deployed hostname in `DJANGO_ALLOWED_HOSTS`, and enable secure cookies/HTTPS redirect/HSTS only when the host is serving HTTPS through a trusted TLS-terminating proxy.
+Never commit `.env`, production credentials, or a production secret key. `.gitignore` excludes `.env`, `.env.*`, key files, and the `secrets/` directory; `.env.example` is the only environment-file exception and must contain placeholders only. Django refuses to start in production mode without `DJANGO_SECRET_KEY` or when the example placeholder is used. Set production secrets directly in the hosting provider's secret/environment settings, not in source files or browser JavaScript. If the application later uses an external API, read its key on the server from an environment variable (for example `os.environ["ANIME_PROVIDER_API_KEY"]`) and never render it into a template or static asset.
+
+When `DJANGO_DEBUG=False`, Django enforces HTTPS redirects, secure session and CSRF cookies, and one-year HSTS for the app hostname and its subdomains. HSTS preloading is not enabled. Heroku terminates TLS before forwarding requests to Django; `SECURE_PROXY_SSL_HEADER` trusts Heroku's `X-Forwarded-Proto` header so HTTPS requests are not redirected repeatedly. These production settings are intentionally not controlled by optional environment flags. Keep the Heroku app on HTTPS and set `DJANGO_DEBUG=False`, `DJANGO_ALLOWED_HOSTS` to its hostname (without a scheme), `CSRF_TRUSTED_ORIGINS` to its HTTPS origin, and `DATABASE_URL` to its PostgreSQL database.
 
 ### UX and responsive design
 
-The interface uses a consistent dark palette, visible keyboard focus, a skip link, semantic page landmarks, labeled forms, and responsive CSS Grid/Flexbox layouts. Targeted contrast checks informed control-border and navigation styling improvements. On narrow screens the catalog becomes a single-column list, navigation wraps, and tracker rows stack their progress and actions. On larger desktop displays, the content container expands and the catalog uses a four-column grid while keeping a readable maximum width. Reduced-motion preferences are respected. The catalog and community feed are paginated. Browser checks verified the skip link is keyboard reachable and found no horizontal overflow at 320, 390, 768, and 1,280 CSS pixels. These checks cover selected accessibility and responsive behaviors; they are not a complete WCAG conformance audit or a substitute for assistive-technology testing. The primary user flows are:
+The interface uses a consistent dark palette, visible keyboard focus, a skip link, semantic page landmarks, labeled forms, and responsive CSS Grid/Flexbox layouts. On narrow screens the catalog becomes a single-column list, navigation wraps, and tracker rows stack their progress and actions. On larger desktop displays, the content container expands and the catalog uses a four-column grid while keeping a readable maximum width. Reduced-motion preferences are respected. The catalog and community feed are paginated. Accessibility checks and known limits are documented in the [accessibility audit](docs/accessibility-audit.md); this review is not a certification of full WCAG conformance. The primary user flows are:
 
 The following low-fidelity wireframes document the page structure and responsive intent. They describe layout rather than final visual styling.
 
@@ -435,6 +434,10 @@ Coverage includes:
 
 The test suite verifies application behavior; it does not replace manual browser checks for accessibility and responsive behavior.
 
+#### Accessibility audit
+
+The [accessibility audit report](docs/accessibility-audit.md) records the automated scan, keyboard and form checks, contrast measurements, and areas that still need assistive-technology testing. On 2 November 2026, axe-core 4.10.3 reported zero violations for WCAG 2.0/2.1 A and AA rules across seven representative public pages in local Chromium. This is useful evidence, not proof that every criterion or authenticated state conforms.
+
 #### End-to-end browser tests
 
 The optional Playwright suite runs the application on Django's live test server with an isolated test database. It exercises the interface in Chromium and verifies persisted results; the browser is not included in production dependencies.
@@ -462,14 +465,12 @@ Remove-Item Env:E2E_SCREENSHOT_DIR
 
 The four browser tests cover:
 
-- Account registration followed by adding, updating, and removing a tracker entry, including canceling and confirming the removal dialog.
-- Publishing a community post, dismissing its success notification, and adding a comment.
+- Account registration followed by adding, updating, and removing a tracker entry.
+- Publishing a community post and adding a comment.
 - Checking invalid-email browser validation, then submitting a valid contact request and verifying it reaches the admin inbox.
 - Keyboard access to the skip link and no horizontal overflow at 320, 390, 768, and 1,280 CSS pixels.
 
 The standard Django suite remains separate at 29 tests; the optional browser suite has four tests and is run explicitly with the command above.
-
-**Latest recorded test run (2 November 2026):** `python manage.py test` — 29 tests passed; `python manage.py test e2e_tests.browser_flows` — 4 Chromium browser tests passed. Django reported no system-check issues.
 
 Screenshots are opt-in and are written to the directory named by `E2E_SCREENSHOT_DIR`. The screenshots shown here were captured from the local test server using the isolated test database; they are illustrative browser-test evidence, not screenshots of the deployed site or evidence of production data.
 
@@ -493,19 +494,19 @@ Screenshots are opt-in and are written to the directory named by `E2E_SCREENSHOT
 
 ![Discover page at mobile width during the browser test](docs/screenshots/e2e/05-discover-mobile.png)
 
-#### Recorded browser-check results
+Manual browser checks (including the small JavaScript interactions):
 
-| Check | Result |
+| Check | Expected result |
 | --- | --- |
-| Registration, tracker add/update, and deletion | Passed in Chromium; canceling the confirmation kept the entry, and confirming removed it |
-| Community post and comment | Passed in Chromium; the post and comment were visible after submission |
-| Success-notification dismissal | Passed in Chromium; dismissing the post-success notification removed it |
-| Contact form email validation and submission | Passed in Chromium; an invalid email was rejected by the browser and a valid request was saved |
-| Keyboard skip link and responsive layout | Passed in Chromium; the skip link received focus first and no horizontal overflow was found at 320, 390, 768, and 1,280 CSS pixels |
-| Django model, view, form, permission, and application tests | 29 tests passed; no Django system-check issues |
-| Deployed-site visual review | Discover and Contact screenshots captured at 900 × 700 on 2 November 2026; separate responsive checks found no horizontal overflow at 320, 390, 768, and 1,280 CSS pixels |
+| Resize the catalog, detail, tracker, feed, About, and Contact pages from 320 px mobile width through tablet, desktop, and ultrawide widths | No horizontal overflow; content and controls remain available, with more catalog columns on wide displays |
+| Use Tab/Shift+Tab and Enter from the top of each page | Focus indicator is visible and links/forms remain usable |
+| Dismiss a success notification | The selected notification disappears |
+| Submit a tracker removal, then cancel the confirmation | The entry remains; confirming removes only the signed-in user's entry |
+| Try an invalid episode count, an overlong post, and an invalid contact email | The form stays open and displays a field-specific validation message |
+| Open another user's post edit/delete URL | The request is denied (404) and the post remains unchanged |
+| Open the catalog when a saved cover image is unavailable | A matching bundled static cover is used, or a title placeholder is shown |
 
-The browser suite uses Django's isolated test database; its contact request does not create data in the deployed admin inbox. The Django tests also cover invalid episode progress, content-length validation, ownership restrictions, and missing-cover fallback. A full screen-reader/accessibility audit and a page-by-page keyboard review remain future verification work.
+These are repeatable checks for manual use; automated Django test results are listed above.
 
 #### Manual browser screenshots
 
@@ -521,54 +522,57 @@ The following desktop screenshots were captured from the deployed site on 2 Nove
 
 ### Deployment
 
-The application is deployed on Heroku: [The Anime Effect](https://theanimeeffect-72c5f4f763fb.herokuapp.com/). The repository includes a `Procfile` with a Gunicorn web process and a release command that runs database migrations.
+The production site is hosted on Heroku. These steps deploy the current Git branch through the Heroku Git CLI. Heroku's release phase in `Procfile` runs migrations before the new web release starts.
 
-#### Deploying to Heroku
-
-1. Create a Heroku app and connect this GitHub repository, or add Heroku as a Git remote. Ensure the app uses the Python buildpack; Heroku installs the pinned packages from `requirements.txt`.
-2. Attach a Heroku-compatible PostgreSQL database. The database add-on supplies `DATABASE_URL`; production settings reject SQLite and require PostgreSQL.
-3. Configure the app's environment variables in Heroku **Settings → Config Vars**. Example values for this app:
-
-   | Variable | Example value |
-   | --- | --- |
-   | `DJANGO_SECRET_KEY` | A newly generated, private random value |
-   | `DJANGO_DEBUG` | `False` |
-   | `DJANGO_ALLOWED_HOSTS` | `theanimeeffect-72c5f4f763fb.herokuapp.com` |
-   | `CSRF_TRUSTED_ORIGINS` | `https://theanimeeffect-72c5f4f763fb.herokuapp.com` |
-   | `DJANGO_SECURE_COOKIES` | `True` |
-   | `DJANGO_SECURE_SSL_REDIRECT` | `True` |
-   | `DATABASE_URL` | Supplied by the attached PostgreSQL add-on |
-
-   Keep the secret key private and set it only in the hosting provider's config. Enable HSTS only after confirming HTTPS works correctly for the deployed domain.
-   Generate a fresh key locally with `python -c "import secrets; print(secrets.token_urlsafe(64))"` and paste it into the Heroku config; do not save it in the repository.
-4. Deploy the `main` branch from the Heroku-connected GitHub repository, or push it through the Heroku Git remote:
+1. Install the [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli), sign in with `heroku login`, and set the app name in PowerShell:
 
    ```powershell
-   git push heroku main
+   $appName = "your-heroku-app-name"
+   $appHost = "$appName.herokuapp.com"
    ```
 
-   The `release` process in `Procfile` runs `python manage.py migrate` before the new release serves traffic.
-5. Review the release and application logs, then run Django's deployment checks:
+   Confirm the app has a PostgreSQL database attached. The app requires `DATABASE_URL` and refuses to start in production without it. If no database is attached, select a suitable Heroku Postgres plan and create it with `heroku addons:create heroku-postgresql:essential-0 --app $appName`; check the plan and billing before creating an add-on.
+2. Configure the non-secret environment values:
 
    ```powershell
-   $app = "your-heroku-app-name"
-   heroku logs --num 100 --app $app
-   heroku run python manage.py check --deploy --app $app
+   heroku config:set DJANGO_DEBUG=False "DJANGO_ALLOWED_HOSTS=$appHost" "CSRF_TRUSTED_ORIGINS=https://$appHost" --app $appName
    ```
 
-   Address any deployment-check warnings that apply to the hosting setup. Open the deployed URL and smoke-test registration, login, the catalog, tracker, community, and contact form. Do not submit a real contact request unless you intend to add it to the live admin inbox.
+   If the app uses a custom domain, include that hostname in `DJANGO_ALLOWED_HOSTS` and its `https://` origin in `CSRF_TRUSTED_ORIGINS`.
+3. Generate and set a private signing key. Do not put its value in the repository or README:
 
-For assessment, confirm the Heroku Config Vars match the secure production values above and that the deployment-check command completes without unresolved security warnings. The source defaults `DJANGO_DEBUG` to `False` in production and refuses to start without a non-placeholder secret key and a production PostgreSQL URL; runtime config values must still be verified in Heroku.
+   ```powershell
+   $secret = python -c "import secrets; print(secrets.token_urlsafe(64))"
+   heroku config:set "DJANGO_SECRET_KEY=$secret" --app $appName
+   Remove-Variable secret
+   ```
+
+4. Ensure the Heroku Git remote is configured, then deploy the current branch:
+
+   ```powershell
+   heroku git:remote --app $appName
+   git push heroku HEAD:main
+   ```
+
+5. Verify the release and production settings:
+
+   ```powershell
+   heroku config:get DJANGO_DEBUG --app $appName
+   heroku config:get DJANGO_ALLOWED_HOSTS --app $appName
+   heroku run python manage.py check --deploy --app $appName
+   curl.exe -sSI "http://$appHost"
+   curl.exe -sS -D - -o NUL "https://$appHost/contact/"
+   ```
+
+   The plain-HTTP request should redirect to HTTPS. The HTTPS response should include `Strict-Transport-Security`; the Contact page's CSRF cookie and an authenticated session cookie should include the `Secure` attribute. A `security.W021` deployment-check warning about HSTS preload is expected: preload is intentionally disabled for the Heroku hostname. Check the release output for successful migrations and open the HTTPS site to smoke-test the catalog, registration/login, tracker, community, and contact flows. A deployment is not verified until these checks have been run against the newly released version.
 
 ### AI-assisted development reflection
 
-I used GitHub Copilot throughout development to help shape the Django app structure and turn the project goals into features such as the anime catalog, private watch tracker, and community feed. I reviewed suggestions against the user stories and adapted them to the app rather than accepting generated code without checking it.
+I used the built-in Copilot to support the development of this application, including establishing its structure, refining the user experience, and identifying accessibility improvements informed by WCAG guidance. Copilot also helped me write and run automated tests, investigate bugs, and work through technical issues as I developed and scoped the project.
 
-Copilot also helped me investigate errors during development, including critical issues that led me to restart early iterations. Working through the failures with its help made it easier to identify likely causes and continue building toward a stable result.
+I encountered several critical errors during development and had to restart the project more than once. Copilot helped me understand and resolve these challenges, and supported me in completing the application on time and to the standard I was aiming for. I reviewed and tested the resulting work as part of the development process.
 
-For user experience, I used Copilot to explore responsive layout and accessibility improvements. This included addressing narrow-screen overflow, improving focus and control styling, and keeping catalog and community lists manageable through pagination. These changes were checked with responsive browser tests and targeted keyboard and contrast checks; they do not establish formal WCAG conformance.
-
-Copilot supported drafting and extending tests for account flows, permissions, catalog management, tracker validation, community posts/comments, and contact submissions. I reviewed the test expectations against the application behavior, ran the Django and Chromium suites, and adjusted tests when browser or database behavior exposed gaps. The recorded result is 29 passing Django tests and 4 passing browser tests. Using AI shortened troubleshooting and test iteration, while running the tests and reviewing the behavior helped me stay responsible for the final implementation.
+Because of time constraints and development challenges, I relied heavily on Copilot while building the blog and comments features with Django. Its step-by-step explanations helped me understand the implementation and add these features to the project.
 
 ### Considerations for next updates
 
