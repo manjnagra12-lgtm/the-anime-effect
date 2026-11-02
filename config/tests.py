@@ -4,6 +4,15 @@ from django.urls import reverse
 
 
 class AccountTests(TestCase):
+    def test_about_page_explains_features_and_how_to_use_them(self):
+        response = self.client.get(reverse("about"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Why it was developed")
+        self.assertContains(response, "Track your watchlist")
+        self.assertContains(response, "Join the community")
+        self.assertContains(response, "How to use the app")
+        self.assertContains(response, reverse("catalog:anime_list"))
+
     def test_registration_creates_user_and_logs_them_in(self):
         response = self.client.post(
             reverse("register"),

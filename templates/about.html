@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}About · The Anime Effect{% endblock %}
+{% block content %}
+  <section class="page-heading about-heading">
+    <p class="eyebrow">About the project</p>
+    <h1>Made for anime fans<span class="text-accent">.</span></h1>
+    <p class="hero-lede">The Anime Effect brings anime discovery, personal watch tracking, and fan conversations together in one place.</p>
+  </section>
+
+  <section class="about-intro" aria-labelledby="why-heading">
+    <div>
+      <p class="eyebrow">Why it was developed</p>
+      <h2 id="why-heading">More than a list of shows</h2>
+    </div>
+    <p>Anime fans often want to find something new, remember where they left off, and talk about what they are watching. This project was developed to bring those everyday activities together in a simple community app—and to put full-stack web development into practice with a responsive interface, user accounts, and connected features.</p>
+  </section>
+
+  <section class="about-features" aria-labelledby="features-heading">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">What you can do</p>
+        <h2 id="features-heading">Your fan toolkit</h2>
+      </div>
+    </div>
+    <div class="about-grid">
+      <article class="about-card">
+        <span class="about-card-icon" aria-hidden="true"><i class="bi bi-search"></i></span>
+        <h3>Discover anime</h3>
+        <p>Browse the catalog, search by title, genre, or studio, and open a show to see its synopsis and details. Browsing is available without an account.</p>
+      </article>
+      <article class="about-card">
+        <span class="about-card-icon" aria-hidden="true"><i class="bi bi-bookmark-check"></i></span>
+        <h3>Track your watchlist</h3>
+        <p>Sign in to add a show to your personal tracker. Set its status to Plan to Watch, Watching, or Completed, update your episode progress, and remove entries when you like.</p>
+      </article>
+      <article class="about-card">
+        <span class="about-card-icon" aria-hidden="true"><i class="bi bi-chat-heart"></i></span>
+        <h3>Join the community</h3>
+        <p>Read the community feed, publish your own posts, and comment on other fans’ posts. You can edit or delete your own posts; an account is needed to post or comment.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="about-guide" aria-labelledby="guide-heading">
+    <p class="eyebrow">Getting started</p>
+    <h2 id="guide-heading">How to use the app</h2>
+    <ol class="guide-steps">
+      <li>
+        <span class="guide-number" aria-hidden="true">01</span>
+        <div><h3>Explore</h3><p>Choose <a href="{% url 'catalog:anime_list' %}">Discover</a> to browse the catalog. Use the search box to narrow it by title, genre, or studio, then select a show for its details.</p></div>
+      </li>
+      <li>
+        <span class="guide-number" aria-hidden="true">02</span>
+        <div><h3>Create an account</h3><p>To save progress or take part in the community, <a href="{% url 'register' %}">create an account</a> or <a href="{% url 'login' %}">log in</a>.</p></div>
+      </li>
+      <li>
+        <span class="guide-number" aria-hidden="true">03</span>
+        <div><h3>Keep track</h3><p>On an anime detail page, choose “Add to my tracker”. Pick a status and episode number. Later, open “My tracker” in the navigation to update or remove it.</p></div>
+      </li>
+      <li>
+        <span class="guide-number" aria-hidden="true">04</span>
+        <div><h3>Share your thoughts</h3><p>Open <a href="{% url 'social:post_list' %}">Community</a> to read posts. Write a post to share a review or recommendation, or open a post to leave a comment.</p></div>
+      </li>
+    </ol>
+  </section>
+
+  <section class="about-cta">
+    <div>
+      <p class="eyebrow">Ready to jump in?</p>
+      <h2>Find your next favorite.</h2>
+    </div>
+    <a class="button" href="{% url 'catalog:anime_list' %}">Explore anime <span aria-hidden="true">↗</span></a>
+  </section>
+{% endblock %}

@@ -19,11 +19,13 @@ from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import include, path
+from django.views.generic import TemplateView
 
 from . import auth_views as account_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("about/", TemplateView.as_view(template_name="about.html"), name="about"),
     path("accounts/register/", account_views.register, name="register"),
     path("accounts/login/", account_views.login_view, name="login"),
     path("accounts/logout/", auth_views.LogoutView.as_view(), name="logout"),

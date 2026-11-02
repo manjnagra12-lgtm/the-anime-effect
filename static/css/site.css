@@ -89,6 +89,26 @@ input::placeholder, textarea::placeholder { color: #898796; }
 .empty-state h2, .empty-state h3 { margin: 8px 0; font-size: 1.4rem; }
 .empty-state p { margin: 0 auto 20px; color: var(--muted); }
 .empty-icon { color: var(--accent); font-size: 2rem; }
+.about-heading { max-width: 800px; }
+.about-heading h1 { font-size: clamp(2.5rem, 6vw, 4.5rem); }
+.about-heading .hero-lede { font-size: 1.1rem; }
+.about-intro { display: grid; grid-template-columns: minmax(200px, .7fr) minmax(0, 1.3fr); gap: 35px; align-items: start; margin: 0 0 58px; padding: 28px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.about-intro h2, .about-guide h2, .about-cta h2 { margin: 0; font-size: clamp(1.7rem, 4vw, 2.35rem); }
+.about-intro > p { margin: 0; color: #cbc9d4; line-height: 1.85; }
+.about-features { margin-bottom: 60px; }
+.about-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.about-card { padding: 23px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); }
+.about-card-icon { display: grid; width: 42px; height: 42px; place-items: center; border: 1px solid #4d4560; border-radius: 11px; background: #292438; color: var(--accent); font-size: 1.2rem; }
+.about-card h3 { margin: 18px 0 8px; font-size: 1.15rem; }
+.about-card p, .guide-steps p { margin: 0; color: var(--muted); line-height: 1.75; }
+.about-guide { max-width: 850px; margin: 0 auto 60px; }
+.about-guide h2 { margin-bottom: 25px; }
+.guide-steps { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.guide-steps li { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 18px; padding: 20px 0; border-top: 1px solid var(--line); }
+.guide-number { color: var(--mint); font-size: .85rem; font-weight: 700; letter-spacing: .08em; }
+.guide-steps h3 { margin: 0 0 7px; font-size: 1.1rem; }
+.about-cta { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 28px; border: 1px solid #383346; border-radius: 15px; background: radial-gradient(ellipse at 75% 30%, #342944, #191b26 75%); }
+.about-cta .eyebrow { margin-bottom: 8px; }
 .detail-panel { padding: clamp(24px, 6vw, 64px); border: 1px solid var(--line); border-radius: 18px; background: linear-gradient(140deg, #1d1d2b, #171923 70%); }
 .detail-topline { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 .detail-panel h1 { max-width: 850px; margin: 12px 0 19px; font-size: clamp(2.5rem, 7vw, 5rem); }
@@ -186,6 +206,10 @@ progress { width: 100%; height: 7px; accent-color: var(--mint); }
   .hero-orbit { right: -85px; width: 170px; height: 170px; opacity: .25; }
   .hero-lede { font-size: .97rem; }
   .section-heading, .page-heading-row { align-items: flex-start; flex-direction: column; }
+  .about-intro { grid-template-columns: 1fr; gap: 14px; margin-bottom: 42px; }
+  .about-grid { grid-template-columns: 1fr; }
+  .about-features, .about-guide { margin-bottom: 42px; }
+  .about-cta { align-items: flex-start; flex-direction: column; }
   .anime-grid { grid-template-columns: 1fr; }
   .card-link { min-height: 205px; }
   .search-form { flex-wrap: wrap; }
