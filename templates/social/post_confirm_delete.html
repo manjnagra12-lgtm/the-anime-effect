@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Delete post · The Anime Effect{% endblock %}
+{% block content %}
+  <section class="form-panel">
+    <p class="eyebrow">Community</p>
+    <h1>Delete your post?</h1>
+    <blockquote class="confirm-quote">{{ post.content|truncatechars:180 }}</blockquote>
+    <form method="post" class="form-actions">
+      {% csrf_token %}
+      <button class="button button-danger" type="submit">Delete post</button>
+      <a class="button button-quiet" href="{% url 'social:post_list' %}">Keep post</a>
+    </form>
+  </section>
+{% endblock %}

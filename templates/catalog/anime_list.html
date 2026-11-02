@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Discover anime · The Anime Effect{% endblock %}
+{% block content %}
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">Your next story starts here</p>
+      <h1>Find your <span class="text-accent">next favorite.</span></h1>
+      <p class="hero-lede">Explore the catalog, keep your watchlist close, and join the conversation.</p>
+    </div>
+    <div class="hero-orbit" aria-hidden="true"><span>アニメ</span><i></i><b></b></div>
+  </section>
+
+  <section aria-labelledby="catalog-heading">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">The catalog</p>
+        <h2 id="catalog-heading">{% if query %}Search results{% else %}Explore anime{% endif %}</h2>
+      </div>
+      {% if user.is_staff %}
+        <a class="button" href="{% url 'catalog:anime_create' %}">Add anime <span aria-hidden="true">＋</span></a>
+      {% endif %}
+    </div>
+    <form class="search-form" method="get" role="search">
+      <label class="sr-only" for="catalog-search">Search anime</label>
+      <input id="catalog-search" type="search" name="q" value="{{ query }}" placeholder="Search title, genre, studio..." autocomplete="off">
+      <button class="button" type="submit">Search</button>
+      {% if query %}<a class="button button-quiet" href="{% url 'catalog:anime_list' %}">Clear</a>{% endif %}
+    </form>
+
+    {% if anime_list %}
+      <div class="anime-grid">
+        {% for anime in anime_list %}
+          <article class="anime-card">
+            <a class="card-link" href="{% url 'catalog:anime_detail' anime.pk %}">
+              {% if anime.image %}
+                <img class="anime-cover" src="{{ anime.image.url }}" alt="Cover art for {{ anime.title }}" loading="lazy">
+              {% else %}
+                <div class="anime-cover anime-cover-placeholder" aria-hidden="true"><span>{{ anime.title|first|upper }}</span></div>
+              {% endif %}
+              <span class="card-kicker">{{ anime.studio|default:"Anime catalog" }}</span>
+              <h3>{{ anime.title }}</h3>
+              <p class="card-synopsis">{{ anime.synopsis|default:"Synopsis coming soon."|truncatewords:24 }}</p>
+              <span class="card-meta">{{ anime.total_episodes }} episode{{ anime.total_episodes|pluralize }}</span>
+              {% if anime.genres %}<span class="genre-list">{{ anime.genres }}</span>{% endif %}
+            </a>
+          </article>
+        {% endfor %}
+      </div>
+      {% if page.has_other_pages %}
+        <nav class="pagination" aria-label="Catalog pages">
+          {% if page.has_previous %}<a class="button button-quiet" href="?q={{ query|urlencode }}&page={{ page.previous_page_number }}">← Previous</a>{% endif %}
+          <span>Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+          {% if page.has_next %}<a class="button button-quiet" href="?q={{ query|urlencode }}&page={{ page.next_page_number }}">Next →</a>{% endif %}
+        </nav>
+      {% endif %}
+    {% else %}
+      <div class="empty-state">
+        <span class="empty-icon" aria-hidden="true">✦</span>
+        <h3>{% if query %}No matches this time.{% else %}The catalog is ready for its first entry.{% endif %}</h3>
+        <p>{% if query %}Try another title, genre, or studio.{% elif user.is_staff %}Add anime from here or the Django admin.{% else %}Check back after an administrator adds some anime.{% endif %}</p>
+        {% if user.is_staff and not query %}<a class="button" href="{% url 'catalog:anime_create' %}">Add the first anime</a>{% endif %}
+      </div>
+    {% endif %}
+  </section>
+{% endblock %}

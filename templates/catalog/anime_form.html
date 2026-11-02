@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ heading }} · The Anime Effect{% endblock %}
+{% block content %}
+  <section class="form-panel">
+    <p class="eyebrow">Catalog management</p>
+    <h1>{{ heading }}</h1>
+    <p class="muted">Only staff members can manage catalog entries.</p>
+    <form method="post" enctype="multipart/form-data" class="site-form">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      {% for field in form %}
+        <p>
+          {{ field.label_tag }}
+          {{ field }}
+          {% if field.name == "image" %}
+            <span id="image-help" class="helptext">Optional cover image. JPEG, PNG, GIF, or WebP; up to 5 MB.</span>
+          {% endif %}
+          {{ field.errors }}
+          {% if field.help_text and field.name != "image" %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+        </p>
+      {% endfor %}
+      <div class="form-actions">
+        <button class="button" type="submit">Save anime</button>
+        <a class="button button-quiet" href="{% url 'catalog:anime_list' %}">Cancel</a>
+      </div>
+    </form>
+  </section>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ anime.title }} · The Anime Effect{% endblock %}
+{% block content %}
+  <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="{% url 'catalog:anime_list' %}">Discover</a><span aria-hidden="true">/</span><span>{{ anime.title }}</span></nav>
+  <article class="detail-panel">
+    <div class="detail-topline">
+      <span class="eyebrow">Anime spotlight</span>
+      {% if user.is_staff %}
+        <div class="inline-actions">
+          <a class="button button-small button-quiet" href="{% url 'catalog:anime_update' anime.pk %}">Edit</a>
+          <a class="button button-small button-danger-quiet" href="{% url 'catalog:anime_delete' anime.pk %}">Delete</a>
+        </div>
+      {% endif %}
+    </div>
+    <h1>{{ anime.title }}</h1>
+    {% if anime.image %}
+      <img class="detail-cover" src="{{ anime.image.url }}" alt="Cover art for {{ anime.title }}">
+    {% endif %}
+    <div class="detail-stats">
+      <span>{{ anime.total_episodes }} episode{{ anime.total_episodes|pluralize }}</span>
+      {% if anime.studio %}<span>{{ anime.studio }}</span>{% endif %}
+      {% if anime.genres %}<span>{{ anime.genres }}</span>{% endif %}
+    </div>
+    <div class="detail-copy">
+      <h2>Synopsis</h2>
+      <p>{{ anime.synopsis|default:"No synopsis has been added yet."|linebreaksbr }}</p>
+    </div>
+    <div class="detail-actions">
+      {% if user.is_authenticated %}
+        {% if tracker_entry %}
+          <a class="button" href="{% url 'tracker:tracker_edit' tracker_entry.pk %}">Update my tracker</a>
+          <span class="muted">You marked this as {{ tracker_entry.status|lower }}.</span>
+        {% else %}
+          <a class="button" href="{% url 'tracker:tracker_add' anime.pk %}">Add to my tracker</a>
+        {% endif %}
+      {% else %}
+        <a class="button" href="{% url 'login' %}?next={{ request.path|urlencode }}">Log in to track this anime</a>
+      {% endif %}
+    </div>
+  </article>
+{% endblock %}

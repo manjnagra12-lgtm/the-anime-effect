@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Community · The Anime Effect{% endblock %}
+{% block content %}
+  <section class="page-heading page-heading-row">
+    <div>
+      <p class="eyebrow">The community feed</p>
+      <h1>Currently discussing<span class="text-accent">.</span></h1>
+      <p class="hero-lede">Fresh thoughts from anime fans, newest first.</p>
+    </div>
+    {% if user.is_authenticated %}
+      <a class="button" href="{% url 'social:post_create' %}">Write a post <span aria-hidden="true">↗</span></a>
+    {% else %}
+      <a class="button" href="{% url 'login' %}?next={% url 'social:post_create' %}">Join the conversation</a>
+    {% endif %}
+  </section>
+  {% if page.object_list %}
+    <div class="feed-list">
+      {% for post in page.object_list %}
+        <article class="post-card">
+          <header class="post-header">
+            <div class="avatar" aria-hidden="true">{{ post.author.username|first|upper }}</div>
+            <div>
+              <h2>{{ post.author.username }}</h2>
+              <time datetime="{{ post.created_at|date:'c' }}">{{ post.created_at|date:"M j, Y · g:i A" }}</time>
+            </div>
+            {% if post.anime %}<a class="post-anime" href="{% url 'catalog:anime_detail' post.anime.pk %}">{{ post.anime.title }}</a>{% endif %}
+          </header>
+          <div class="post-content">{{ post.content|linebreaksbr }}</div>
+          {% if user.is_authenticated and user == post.author %}
+            <footer class="inline-actions post-actions">
+              <a class="button button-small button-quiet" href="{% url 'social:post_edit' post.pk %}">Edit</a>
+              <a class="button button-small button-danger-quiet" href="{% url 'social:post_delete' post.pk %}">Delete</a>
+            </footer>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+    {% if page.has_other_pages %}
+      <nav class="pagination" aria-label="Community feed pages">
+        {% if page.has_previous %}<a class="button button-quiet" href="?page={{ page.previous_page_number }}">← Newer</a>{% endif %}
+        <span>Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+        {% if page.has_next %}<a class="button button-quiet" href="?page={{ page.next_page_number }}">Older →</a>{% endif %}
+      </nav>
+    {% endif %}
+  {% else %}
+    <div class="empty-state">
+      <span class="empty-icon" aria-hidden="true">✎</span>
+      <h2>The conversation starts with you.</h2>
+      <p>Share a review, a recommendation, or the moment that made you love a show.</p>
+      {% if user.is_authenticated %}<a class="button" href="{% url 'social:post_create' %}">Write the first post</a>{% else %}<a class="button" href="{% url 'register' %}">Create an account</a>{% endif %}
+    </div>
+  {% endif %}
+{% endblock %}

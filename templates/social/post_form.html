@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{{ heading }} · The Anime Effect{% endblock %}
+{% block content %}
+  <section class="form-panel">
+    <p class="eyebrow">Community</p>
+    <h1>{{ heading }}</h1>
+    <p class="muted">Posts can be up to 1,000 characters. Add an anime tag if it fits.</p>
+    <form method="post" class="site-form">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      {{ form.as_p }}
+      <div class="form-actions">
+        <button class="button" type="submit">Publish post</button>
+        <a class="button button-quiet" href="{% url 'social:post_list' %}">Cancel</a>
+      </div>
+    </form>
+  </section>
+{% endblock %}

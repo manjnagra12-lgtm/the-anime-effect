@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}My tracker · The Anime Effect{% endblock %}
+{% block content %}
+  <section class="page-heading">
+    <p class="eyebrow">Your personal watchlist</p>
+    <h1>My tracker<span class="text-accent">.</span></h1>
+    <p class="hero-lede">Pick up where you left off and keep every episode in view.</p>
+  </section>
+  {% if entries %}
+    <div class="tracker-list">
+      {% for entry in entries %}
+        <article class="tracker-row">
+          <div class="tracker-main">
+            <a href="{% url 'catalog:anime_detail' entry.anime.pk %}"><h2>{{ entry.anime.title }}</h2></a>
+            <span class="status-pill status-{{ entry.status|slugify }}">{{ entry.status }}</span>
+          </div>
+          <div class="progress-block">
+            <span>Episode {{ entry.current_episode }} of {{ entry.anime.total_episodes }}</span>
+            <progress value="{{ entry.current_episode }}" max="{{ entry.anime.total_episodes }}" aria-label="{{ entry.current_episode }} of {{ entry.anime.total_episodes }} episodes watched"></progress>
+          </div>
+          <div class="inline-actions">
+            <a class="button button-small button-quiet" href="{% url 'tracker:tracker_edit' entry.pk %}">Update</a>
+            <form method="post" action="{% url 'tracker:tracker_delete' entry.pk %}" data-confirm="Remove {{ entry.anime.title }} from your tracker?">
+              {% csrf_token %}
+              <button class="button button-small button-danger-quiet" type="submit">Remove</button>
+            </form>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <span class="empty-icon" aria-hidden="true">＋</span>
+      <h2>Your tracker is waiting for a first pick.</h2>
+      <p>Browse the catalog and add an anime to start keeping track.</p>
+      <a class="button" href="{% url 'catalog:anime_list' %}">Explore anime</a>
+    </div>
+  {% endif %}
+{% endblock %}

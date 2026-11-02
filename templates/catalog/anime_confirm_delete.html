@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Delete {{ anime.title }} · The Anime Effect{% endblock %}
+{% block content %}
+  <section class="form-panel">
+    <p class="eyebrow">Catalog management</p>
+    <h1>Remove this anime?</h1>
+    <p>Delete <strong>{{ anime.title }}</strong> from the catalog? Existing tracker entries will also be removed.</p>
+    <form method="post" class="form-actions">
+      {% csrf_token %}
+      <button class="button button-danger" type="submit">Delete anime</button>
+      <a class="button button-quiet" href="{% url 'catalog:anime_detail' anime.pk %}">Keep anime</a>
+    </form>
+  </section>
+{% endblock %}

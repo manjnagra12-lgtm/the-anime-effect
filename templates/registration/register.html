@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Create account · The Anime Effect{% endblock %}
+{% block content %}
+  <section class="form-panel auth-panel">
+    <p class="eyebrow">Find your people</p>
+    <h1>Create an account<span class="text-accent">.</span></h1>
+    <p class="muted">Build a watchlist and join the anime conversation.</p>
+    <form method="post" class="site-form">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      {{ form.as_p }}
+      <button class="button button-wide" type="submit">Create account</button>
+    </form>
+    <p class="form-footnote">Already have an account? <a href="{% url 'login' %}">Log in</a>.</p>
+  </section>
+{% endblock %}
